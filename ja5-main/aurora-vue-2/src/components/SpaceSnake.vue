@@ -2,11 +2,11 @@
   <div class="page">
     <SiteNav :user="user" active="game" @go="$emit('navigate', $event)" @logout="$emit('logout')" />
 
-    <main class="main">
-      <header class="head">
-        <span class="head__badge">GAME</span>
-        <h1 class="head__title">星空贪吃蛇</h1>
-        <p class="head__sub">驾驶光蛇穿越星海，吞噬小星球 —— 撞上星界边界或自己，航程就结束了</p>
+    <main class="subpage main">
+      <header class="subhead">
+        <span class="subhead__tag">Game</span>
+        <h1>花瓣贪吃蛇</h1>
+        <p>在夜樱色的花田里追着飘落的花瓣跑 —— 撞上边栏或自己的尾巴，这一场春风就停了。</p>
       </header>
 
       <!-- ============ 游戏区 ============ -->
@@ -15,13 +15,13 @@
           <div class="hud__stats">
             <div class="stat"><b>{{ score }}</b><span>得分</span></div>
             <div class="stat"><b>{{ best }}</b><span>最高分</span></div>
-            <div class="stat"><b>{{ planets }}</b><span>吞噬星球</span></div>
-            <div class="stat"><b>{{ speedLabel }}</b><span>航速</span></div>
+            <div class="stat"><b>{{ planets }}</b><span>吃到花瓣</span></div>
+            <div class="stat"><b>{{ speedLabel }}</b><span>速度</span></div>
           </div>
           <div class="hud__btns">
-            <button class="gbtn" type="button" :disabled="phase === 'ready' || phase === 'over'"
+            <button class="gbtn gbtn--ghost" type="button" :disabled="phase === 'ready' || phase === 'over'"
                     @click="togglePause">{{ phase === 'paused' ? '继续' : '暂停' }}</button>
-            <button class="gbtn" type="button" @click="restart">重开</button>
+            <button class="gbtn gbtn--ghost" type="button" @click="restart">重开</button>
             <button class="gbtn gbtn--ghost" type="button" @click="toggleFullscreen">
               {{ fullscreen ? '退出全屏' : '全屏' }}
             </button>
@@ -45,9 +45,9 @@
           <!-- 开始遮罩 -->
           <div v-if="phase === 'ready'" class="overlay">
             <div class="ov">
-              <span class="ov__badge">SPACE SNAKE</span>
-              <h2 class="ov__title">准备起航</h2>
-              <p class="ov__text">吞噬星海中的小星球让自己变长<br />普通星球 <i class="c-cyan">+10</i> · 金色星球 <i class="c-gold">+50</i></p>
+              <span class="ov__badge">SAKURA SNAKE</span>
+              <h2 class="ov__title">风起了</h2>
+              <p class="ov__text">追着花瓣，让自己越跑越长<br />淡粉花瓣 <i class="c-cyan">+10</i> · 金色花瓣 <i class="c-gold">+50</i></p>
               <button class="gbtn gbtn--big" type="button" @click="start">开始游戏</button>
               <p class="ov__hint">方向键 / WASD 移动 · 空格暂停 · 触屏可滑动或使用方向键</p>
             </div>
@@ -57,8 +57,8 @@
           <div v-else-if="phase === 'paused'" class="overlay">
             <div class="ov">
               <span class="ov__badge">PAUSED</span>
-              <h2 class="ov__title">已暂停</h2>
-              <button class="gbtn gbtn--big" type="button" @click="togglePause">继续航行</button>
+              <h2 class="ov__title">风停在半空</h2>
+              <button class="gbtn gbtn--big" type="button" @click="togglePause">继续奔跑</button>
               <p class="ov__hint">按空格也可以继续</p>
             </div>
           </div>
@@ -67,9 +67,9 @@
           <div v-else-if="phase === 'over'" class="overlay">
             <div class="ov">
               <span class="ov__badge" :class="{ 'ov__badge--gold': isNewRecord }">{{ isNewRecord ? 'NEW RECORD' : 'GAME OVER' }}</span>
-              <h2 class="ov__title">{{ isNewRecord ? '新纪录！' : '本局结束' }}</h2>
+              <h2 class="ov__title">{{ isNewRecord ? '新的花冠！' : '花落一地' }}</h2>
               <div class="ov__score">{{ score }}</div>
-              <p class="ov__text">吞噬 {{ planets }} 颗星球 · 时长 {{ timeLabel }} · 航速 {{ speedLabel }}</p>
+              <p class="ov__text">接住 {{ planets }} 片花瓣 · 时长 {{ timeLabel }} · 速度 {{ speedLabel }}</p>
 
               <div class="ov__submit">
                 <button v-if="user && score > 0 && submitState !== 'done'"
@@ -78,7 +78,7 @@
                   {{ submitState === 'submitting' ? '上传中…' : '提交成绩上榜' }}
                 </button>
                 <p v-if="submitMsg" class="ov__msg" :class="{ 'ov__msg--err': submitState === 'error' }">{{ submitMsg }}</p>
-                <p v-else-if="user && score === 0" class="ov__msg">吃掉至少一颗星球才能上榜</p>
+                <p v-else-if="user && score === 0" class="ov__msg">至少接住一片花瓣才能上榜</p>
                 <p v-else-if="!user" class="ov__msg">登录后即可上传成绩参与排名</p>
               </div>
 
@@ -93,10 +93,10 @@
       <section class="panels">
         <div class="card">
           <div class="card__head">
-            <h2 class="card__title">排行榜 TOP 10</h2>
+            <h2 class="card__title">花榜 TOP 10</h2>
             <button class="link" type="button" @click="loadLeaderboard">刷新</button>
           </div>
-          <div v-if="lbLoading" class="hint">正在连接星图…</div>
+          <div v-if="lbLoading" class="hint">正在翻阅花名册…</div>
           <div v-else-if="lbError" class="hint hint--err">{{ lbError }}</div>
           <div v-else-if="!leaderboard.length" class="hint">还没有人上榜，快来写下第一个名字</div>
           <ol v-else class="rank">
@@ -118,22 +118,22 @@
             <div class="stat stat--lg"><b>{{ myBest.playCount || 0 }}</b><span>总局数</span></div>
           </div>
           <p v-else class="hint">登录后可上传成绩并参与全站排名</p>
-          <p class="hint" v-if="user">结算界面点击「提交成绩上榜」，即可把本局写进排行榜</p>
+          <p class="hint" v-if="user">结算界面点击「提交成绩上榜」，就能把这一局写进花榜</p>
         </div>
 
         <div class="card card--tip">
-          <h2 class="card__title">航行守则</h2>
+          <h2 class="card__title">玩法</h2>
           <ul class="rules">
-            <li>方向键 / WASD 改变航向，不能直接掉头</li>
-            <li>普通小星球 <i class="c-cyan">+10</i> 分，金色星球 <i class="c-gold">+50</i> 分且更罕见</li>
-            <li>每吞噬一颗星球航速提升，越到后面越刺激</li>
-            <li>撞上边界或自己的身体即坠毁，本局结束</li>
+            <li>方向键 / WASD 改变方向，不能直接掉头</li>
+            <li>淡粉花瓣 <i class="c-cyan">+10</i> 分，金色花瓣 <i class="c-gold">+50</i> 分且更罕见</li>
+            <li>每接住一片花瓣速度就会变快，越到后面越刺激</li>
+            <li>撞上边栏或自己的尾巴即结束本局</li>
           </ul>
         </div>
       </section>
 
       <footer class="foot">
-        <span>AURORA · 星空贪吃蛇</span>
+        <span>樱见 · 花瓣贪吃蛇</span>
         <span class="foot__dot"></span>
         <span>成绩通过 /api/game 接口入库</span>
       </footer>
@@ -424,9 +424,9 @@ function render (ts) {
 
   // 深空底
   const bg = ctx.createLinearGradient(0, 0, W, H)
-  bg.addColorStop(0, '#070812')
-  bg.addColorStop(0.5, '#05060f')
-  bg.addColorStop(1, '#0a0716')
+  bg.addColorStop(0, '#1a1020')
+  bg.addColorStop(0.5, '#120a18')
+  bg.addColorStop(1, '#1d0f1c')
   ctx.fillStyle = bg
   ctx.fillRect(-20, -20, W + 40, H + 40)
 
@@ -434,9 +434,9 @@ function render (ts) {
   ctx.globalCompositeOperation = 'lighter'
   const m = Math.min(W, H)
   const blobs = [
-    { x: 0.2, y: 0.24, r: 0.6, c: '124,92,255', s: 0.0002, p: 0 },
-    { x: 0.82, y: 0.2, r: 0.5, c: '34,211,238', s: 0.00016, p: 2.1 },
-    { x: 0.74, y: 0.82, r: 0.55, c: '255,95,162', s: 0.00013, p: 4.2 }
+    { x: 0.2, y: 0.24, r: 0.6, c: '249,116,159', s: 0.0002, p: 0 },
+    { x: 0.82, y: 0.2, r: 0.5, c: '90,169,221', s: 0.00016, p: 2.1 },
+    { x: 0.74, y: 0.82, r: 0.55, c: '232,84,127', s: 0.00013, p: 4.2 }
   ]
   for (const b of blobs) {
     const bx = (b.x + Math.sin(t * b.s + b.p) * 0.1) * W
@@ -457,7 +457,7 @@ function render (ts) {
     s.x += s.v * 16
     if (s.x > W + 2) s.x = -2
     const tw = 0.72 + 0.28 * Math.sin(t * 0.002 + s.tw)
-    ctx.fillStyle = `rgba(214,228,255,${s.a * tw})`
+    ctx.fillStyle = `rgba(255,232,242,${s.a * tw})`
     ctx.beginPath()
     ctx.arc(s.x, s.y, s.r, 0, 6.2832)
     ctx.fill()
@@ -465,7 +465,7 @@ function render (ts) {
   ctx.globalCompositeOperation = 'source-over'
 
   // 网格
-  ctx.strokeStyle = 'rgba(255,255,255,.035)'
+  ctx.strokeStyle = 'rgba(255,196,217,.06)'
   ctx.lineWidth = 1
   ctx.beginPath()
   for (let i = 1; i < COLS; i++) {
@@ -826,61 +826,17 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ============ 页面骨架（对齐 AboutPage 的节奏，棋盘区更宽） ============ */
 .page {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 960px;
   min-height: 100vh;
-  margin: 0 auto;
-  padding: 22px 24px 60px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
 }
 .main {
-  flex: 1;
+  max-width: 960px;
   display: flex;
   flex-direction: column;
   gap: 22px;
-  padding-top: 22px;
-}
-
-/* 页头 */
-.head {
-  text-align: center;
-  max-width: 720px;
-  width: 100%;
-  margin: 0 auto;
-  animation: rise 0.55s var(--ease) both;
-}
-.head__badge {
-  display: inline-block;
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: var(--a2);
-  border: 1px solid rgba(34, 211, 238, 0.5);
-  border-radius: 999px;
-  padding: 3px 13px;
-  margin-bottom: 16px;
-}
-.head__title {
-  font-size: clamp(28px, 3.6vw, 40px);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  background: linear-gradient(100deg, var(--a2), var(--a1) 45%, var(--a3));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  background-size: 200% auto;
-  animation: shine 6s linear infinite;
-}
-.head__sub {
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 300;
-  margin-top: 12px;
 }
 
 /* ============ HUD ============ */
@@ -888,76 +844,92 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  animation: rise 0.55s var(--ease) both;
+  animation: rise .55s var(--ease) both;
 }
 .hud {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 14px;
+  gap: 0;
   flex-wrap: wrap;
-  padding: 12px 18px;
-  border-radius: 16px;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015) 50%, rgba(255, 255, 255, 0.04)),
-    rgba(10, 12, 26, 0.55);
-  border: 1px solid var(--stroke);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  /* 与游戏面板同宽居中，视觉上成一整块 */
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0;
+  border-radius: 18px;
+  background: var(--porcelain-flat);
+  border: 1px solid var(--porcelain-line);
+  box-shadow: var(--gloss), var(--lift);
+  overflow: hidden;
 }
+/* 四格数据用发丝线分隔，右侧按钮组单独占一格 */
 .hud__stats {
-  display: flex;
-  gap: 26px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(62px, auto));
+  flex: 1;
+  min-width: 0;
 }
+.hud__stats .stat {
+  padding: 12px 18px;
+  border-left: 1px solid var(--line-soft);
+  min-width: 0;
+}
+.hud__stats .stat:first-child { border-left: 0; }
 .stat b {
   display: block;
+  font-family: var(--font-serif);
   font-size: 20px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  line-height: 1.15;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 .stat span {
-  font-size: 11.5px;
-  color: var(--muted);
-  letter-spacing: 0.08em;
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--faint);
+  letter-spacing: .1em;
+  white-space: nowrap;
 }
 .stat--lg b { font-size: 24px; }
 .hud__btns {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-left: 1px solid var(--line-soft);
+  background: rgba(255, 244, 247, .55);
 }
 
 /* 通用游戏按钮 */
 .gbtn {
   height: 36px;
-  padding: 0 16px;
+  padding: 0 17px;
   border: 0;
-  border-radius: 11px;
+  border-radius: 999px;
   cursor: pointer;
   font: inherit;
   font-size: 13px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(115deg, var(--a1), #5b8bff 45%, var(--a2));
-  background-size: 180% auto;
-  box-shadow: 0 10px 24px -10px rgba(124, 92, 255, 0.8);
-  transition: background-position 0.5s, transform 0.3s var(--ease), opacity 0.25s;
+  background: linear-gradient(120deg, var(--sakura-500), var(--sakura-600));
+  box-shadow: 0 12px 24px -16px rgba(232, 84, 127, .95);
+  transition: transform .3s var(--ease), opacity .25s, box-shadow .3s;
 }
-.gbtn:hover:not(:disabled) { background-position: right center; transform: translateY(-1px); }
-.gbtn:disabled { cursor: not-allowed; opacity: 0.5; }
+.gbtn:hover:not(:disabled) { transform: translateY(-2px); }
+.gbtn:disabled { cursor: not-allowed; opacity: .5; }
 .gbtn--ghost {
-  background: var(--glass);
-  border: 1px solid var(--stroke);
+  background: #fff;
+  border: 1px solid var(--sakura-200);
   box-shadow: none;
-  color: var(--ink);
+  color: var(--sakura-600);
 }
-.gbtn--ghost:hover:not(:disabled) { background: var(--glass-2); }
+.gbtn--ghost:hover:not(:disabled) { background: var(--sakura-50); }
 .gbtn--big {
   height: 46px;
-  padding: 0 30px;
+  padding: 0 32px;
   font-size: 15px;
   margin-top: 4px;
 }
@@ -969,11 +941,14 @@ onBeforeUnmount(() => {
   max-width: 560px;
   margin: 0 auto;
   aspect-ratio: 1 / 1;
-  border-radius: 20px;
+  border-radius: 22px;
   overflow: hidden;
-  border: 1px solid var(--stroke);
-  background: rgba(5, 6, 15, 0.6);
-  box-shadow: 0 30px 70px -34px rgba(0, 0, 0, 0.95), 0 0 90px -50px rgba(124, 92, 255, 0.5);
+  border: 1px solid var(--sakura-200);
+  background: #150c1a;
+  box-shadow:
+    0 34px 70px -40px rgba(60, 20, 40, .9),
+    0 0 0 8px rgba(255, 255, 255, .55),
+    0 0 90px -46px rgba(249, 116, 159, .8);
 }
 .board canvas {
   display: block;
@@ -989,6 +964,7 @@ onBeforeUnmount(() => {
   aspect-ratio: 1 / 1;
   border-radius: 0;
   border: 0;
+  box-shadow: none;
 }
 
 /* 遮罩 */
@@ -1000,10 +976,9 @@ onBeforeUnmount(() => {
   place-items: center;
   text-align: center;
   padding: 22px;
-  background: rgba(5, 6, 15, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  animation: fade 0.35s var(--ease);
+  background: rgba(28, 14, 24, .78);
+  backdrop-filter: blur(10px);
+  animation: fade .35s var(--ease);
 }
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
 .ov {
@@ -1014,46 +989,48 @@ onBeforeUnmount(() => {
   max-width: 420px;
 }
 .ov__badge {
-  font-size: 11px;
-  letter-spacing: 2.5px;
-  color: var(--a2);
-  border: 1px solid rgba(34, 211, 238, 0.5);
+  font-size: 10.5px;
+  letter-spacing: .26em;
+  color: #ffd0df;
+  border: 1px solid rgba(255, 196, 217, .42);
   border-radius: 999px;
-  padding: 3px 13px;
+  padding: 3px 14px;
 }
 .ov__badge--gold {
-  color: #fcd34d;
-  border-color: rgba(252, 211, 77, 0.55);
-  box-shadow: 0 0 24px -6px rgba(252, 211, 77, 0.6);
+  color: #ffe6a8;
+  border-color: rgba(252, 211, 77, .55);
+  box-shadow: 0 0 26px -6px rgba(252, 211, 77, .6);
 }
 .ov__title {
-  font-size: clamp(24px, 3vw, 32px);
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 3vw, 31px);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  background: linear-gradient(100deg, var(--a2), var(--a1) 50%, var(--a3));
+  letter-spacing: .04em;
+  background: linear-gradient(100deg, #ffd6e4, #fff 45%, #ffb3cd);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .ov__score {
-  font-size: 52px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 54px;
+  font-weight: 600;
+  color: #fff;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  text-shadow: 0 0 30px rgba(34, 211, 238, 0.45);
+  text-shadow: 0 0 34px rgba(249, 116, 159, .75);
 }
 .ov__text {
-  font-size: 14px;
-  color: rgba(238, 242, 255, 0.78);
-  font-weight: 300;
-  line-height: 1.8;
+  margin: 0;
+  font-size: 13.5px;
+  color: rgba(255, 232, 242, .8);
+  line-height: 1.85;
 }
 .ov__hint {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 300;
+  margin: 0;
+  font-size: 11.5px;
+  color: rgba(255, 220, 232, .5);
 }
 .ov__submit {
   display: flex;
@@ -1063,13 +1040,13 @@ onBeforeUnmount(() => {
   min-height: 20px;
 }
 .ov__msg {
+  margin: 0;
   font-size: 12.5px;
-  color: var(--a2);
-  font-weight: 300;
+  color: #ffc4d9;
 }
-.ov__msg--err { color: #ff8098; }
-.c-cyan { font-style: normal; color: var(--a2); font-weight: 600; }
-.c-gold { font-style: normal; color: #fcd34d; font-weight: 600; }
+.ov__msg--err { color: #ff9db1; }
+.c-cyan { font-style: normal; color: #8ecdf2; font-weight: 600; }
+.c-gold { font-style: normal; color: #ffe6a8; font-weight: 600; }
 
 /* 虚拟方向键 */
 .dpad {
@@ -1083,17 +1060,17 @@ onBeforeUnmount(() => {
   gap: 5px;
 }
 .dpad__btn {
-  border: 1px solid var(--stroke);
-  background: rgba(10, 12, 26, 0.55);
+  border: 1px solid rgba(255, 196, 217, .3);
+  background: rgba(40, 20, 32, .6);
   backdrop-filter: blur(8px);
-  color: var(--ink);
+  color: #ffe4ee;
   border-radius: 10px;
   font-size: 13px;
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
 }
-.dpad__btn:active { background: rgba(124, 92, 255, 0.4); }
+.dpad__btn:active { background: rgba(249, 116, 159, .45); }
 .dpad__up { grid-column: 2; grid-row: 1; }
 .dpad__left { grid-column: 1; grid-row: 2; }
 .dpad__right { grid-column: 3; grid-row: 2; }
@@ -1112,18 +1089,15 @@ onBeforeUnmount(() => {
 .panels .card--tip { grid-column: 1 / -1; }
 .card {
   padding: 22px 26px;
-  border-radius: 18px;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
-    rgba(10, 12, 26, 0.5);
-  border: 1px solid var(--stroke);
-  animation: rise 0.55s var(--ease) both;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .76);
+  border: 1px solid var(--line-soft);
+  box-shadow: 0 18px 38px -36px rgba(120, 60, 84, .9);
+  animation: rise .55s var(--ease) both;
 }
 .card--tip {
-  border-color: rgba(34, 211, 238, 0.35);
-  background:
-    linear-gradient(160deg, rgba(34, 211, 238, 0.07), rgba(255, 255, 255, 0.015) 50%, rgba(255, 255, 255, 0.03)),
-    rgba(10, 12, 26, 0.55);
+  border-color: var(--sakura-200);
+  background: linear-gradient(150deg, #fff, var(--sakura-50));
 }
 .card__head {
   display: flex;
@@ -1132,61 +1106,77 @@ onBeforeUnmount(() => {
   margin-bottom: 14px;
 }
 .card__title {
+  position: relative;
+  margin: 0 0 14px;
+  padding-left: 14px;
+  font-family: var(--font-serif);
   font-size: 16px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: .04em;
+  color: var(--ink);
+}
+.card__head .card__title { margin-bottom: 0; }
+.card__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--sakura-400), var(--sakura-600));
 }
 .link {
   background: none;
   border: 0;
-  color: var(--a2);
+  color: var(--sakura-500);
   font: inherit;
   font-size: 12.5px;
   cursor: pointer;
   padding: 0;
-  transition: filter 0.25s;
+  transition: color .25s;
 }
-.link:hover { filter: brightness(1.25); }
+.link:hover { color: var(--sakura-700); }
 
 .hint {
+  margin: 0;
   font-size: 13px;
   color: var(--muted);
-  font-weight: 300;
   line-height: 1.8;
 }
-.hint--err { color: #ff8098; }
+.hint--err { color: var(--sakura-700); }
 
 /* 排行榜 */
 .rank {
   list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
 }
 .rank__row {
   display: grid;
-  grid-template-columns: 34px 1fr auto auto;
+  grid-template-columns: 32px 1fr auto auto;
   align-items: center;
   gap: 12px;
-  padding: 9px 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 9px 6px;
+  border-bottom: 1px solid var(--line-soft);
   font-size: 13.5px;
 }
 .rank__row:last-child { border-bottom: 0; }
 .rank__row--me {
-  background: linear-gradient(90deg, rgba(124, 92, 255, 0.14), transparent 70%);
+  background: linear-gradient(90deg, var(--sakura-50), transparent 80%);
   border-radius: 10px;
 }
 .rank__no {
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--faint);
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
-.rank__no--top {
-  color: #fcd34d;
-  text-shadow: 0 0 14px rgba(252, 211, 77, 0.5);
-}
+.rank__no--top { color: var(--sakura-600); }
 .rank__name {
   color: var(--ink);
   font-weight: 500;
@@ -1196,12 +1186,12 @@ onBeforeUnmount(() => {
 }
 .rank__score {
   font-weight: 700;
-  color: var(--a2);
+  color: var(--sakura-600);
   font-variant-numeric: tabular-nums;
 }
 .rank__meta {
   font-size: 11.5px;
-  color: var(--muted);
+  color: var(--faint);
   font-variant-numeric: tabular-nums;
   min-width: 84px;
   text-align: right;
@@ -1218,12 +1208,13 @@ onBeforeUnmount(() => {
 /* 玩法 */
 .rules {
   list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 13.5px;
-  color: rgba(238, 242, 255, 0.78);
-  font-weight: 300;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--ink-soft);
   line-height: 1.7;
 }
 .rules li {
@@ -1231,15 +1222,14 @@ onBeforeUnmount(() => {
   position: relative;
 }
 .rules li::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
-  top: 0.62em;
+  top: .66em;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--a1), var(--a2));
-  box-shadow: 0 0 10px var(--a1);
+  background: var(--sakura-400);
 }
 
 /* 页脚 */
@@ -1248,34 +1238,34 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 8px 0 2px;
+  padding: 10px 0 2px;
   font-size: 12px;
-  font-weight: 300;
-  color: var(--muted);
-  letter-spacing: 0.04em;
+  color: var(--faint);
+  letter-spacing: .04em;
 }
 .foot__dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--muted);
-  opacity: 0.6;
+  background: var(--sakura-300);
 }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
 }
-@keyframes shine { to { background-position: 200% center; } }
 
 @media (max-width: 720px) {
   .panels { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
-  .page { padding: 14px 14px 40px; gap: 14px; }
-  .hud { padding: 10px 14px; }
-  .hud__stats { gap: 18px; }
+  /* 窄屏：数据四格换行到上排，按钮组独占下排 */
+  .hud { flex-direction: column; }
+  .hud__stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .hud__stats .stat { padding: 11px 10px; text-align: center; }
   .stat b { font-size: 17px; }
+  .hud__btns { border-left: 0; border-top: 1px solid var(--line-soft); justify-content: center; }
   .board { max-width: 100%; }
+  .card { padding: 18px; }
 }
 </style>

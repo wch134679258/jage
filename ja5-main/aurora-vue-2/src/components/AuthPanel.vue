@@ -67,7 +67,7 @@
       <div class="row" data-for="signup">
         <label class="check">
           <input type="checkbox" id="agree" v-model="agree" />
-          <span class="box" :style="agreeInvalid ? { borderColor: 'rgba(255,95,120,.8)' } : null">
+          <span class="box" :style="agreeInvalid ? { borderColor: 'rgba(232,84,127,.85)' } : null">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
           </span>
           <span class="agree-text">我已阅读并同意 <a class="link-inline" @click.stop.prevent>服务条款</a> 与 <a class="link-inline" @click.stop.prevent>隐私政策</a></span>
@@ -87,8 +87,18 @@
       </button>
     </form>
 
-    <div class="divider">或使用以下方式</div>
-    <SocialButtons />
+    <!-- 演示账号提示（与 AI-启动指引 中的测试账号一致） -->
+    <button class="demo" type="button" @click="fillDemo">
+      <span class="demo__ico">✿</span>
+      <span class="demo__txt">
+        <b>用演示账号快速进入</b>
+        <i>verify用户 / abc12345</i>
+      </span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h13M13 6l6 6-6 6" />
+      </svg>
+    </button>
   </div>
 </template>
 
@@ -99,7 +109,6 @@ import AuthTabs from './AuthTabs.vue'
 import FormField from './FormField.vue'
 import PasswordField from './PasswordField.vue'
 import PasswordStrength from './PasswordStrength.vue'
-import SocialButtons from './SocialButtons.vue'
 
 const emit = defineEmits(['success'])
 
@@ -142,6 +151,21 @@ function handleSubmit () {
     const target = first && fieldMap[first]
     if (target && target.value) target.value.focus()
   }
+}
+
+/**
+ * 演示账号一键填入：切到登录模式并写入测试账号，
+ * 用户只需点「登录」即可（密码仍需走正常校验流程）。
+ */
+function fillDemo () {
+  if (mode.value !== 'login') setMode('login')
+  nextTick(() => {
+    form.name = 'verify用户'
+    form.pass = 'abc12345'
+    clearField('name')
+    clearField('pass')
+    syncHeight()
+  })
 }
 
 function addRipple (e) {
@@ -199,3 +223,56 @@ onBeforeUnmount(() => {
 
 defineExpose({ resetToLogin })
 </script>
+
+<style scoped>
+/* 演示账号一键填入：低饱和描边按钮，不抢主按钮的视觉重量 */
+.demo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 11px 14px;
+  border-radius: 15px;
+  border: 1px dashed rgba(249, 116, 159, .42);
+  background: rgba(255, 240, 246, .62);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .3s, border-color .3s, transform .3s var(--ease);
+}
+.demo:hover {
+  background: rgba(255, 226, 238, .9);
+  border-color: var(--sakura-400);
+  transform: translateY(-1px);
+}
+.demo__ico {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sakura-300), var(--sakura-500));
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 6px 14px -8px rgba(232, 84, 127, .9);
+}
+.demo__txt { display: flex; flex-direction: column; line-height: 1.35; min-width: 0; }
+.demo__txt b { font-size: 13px; font-weight: 600; }
+.demo__txt i {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+.demo > svg {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  flex: none;
+  color: var(--sakura-600);
+  transition: transform .3s var(--ease);
+}
+.demo:hover > svg { transform: translateX(3px); }
+</style>

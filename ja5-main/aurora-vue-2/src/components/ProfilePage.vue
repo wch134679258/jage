@@ -2,7 +2,13 @@
   <div class="profile">
     <SiteNav :user="user" active="profile" @go="onGo" @logout="$emit('logout')" />
 
-    <main class="profile__main">
+    <main class="subpage profile__main">
+      <header class="subhead">
+        <span class="subhead__tag">Profile</span>
+        <h1>我的花笺</h1>
+        <p>读过的、收起的、玩过的，都记在这里。</p>
+      </header>
+
       <!-- ============ 个人信息卡 ============ -->
       <section class="pcard">
         <StateBlock v-if="loading" variant="skeleton" shape="line" />
@@ -17,7 +23,7 @@
           <div class="pcard__head">
             <div class="pcard__avatar">{{ avatarText }}</div>
             <div class="pcard__id">
-              <h1 class="pcard__name">{{ profile.user.name }}</h1>
+              <h2 class="pcard__name">{{ profile.user.name }}</h2>
               <p class="pcard__sub">
                 ID · {{ profile.user.id }}
                 <span v-if="profile.user.joinedAt"> · 加入于 {{ profile.user.joinedAt }}</span>
@@ -30,11 +36,11 @@
           <div class="stats">
             <button class="stat" type="button" @click="$emit('navigate', 'favorites')">
               <b>{{ profile.stats.favorites }}</b>
-              <span>收藏</span>
+              <span>收进书签</span>
             </button>
             <div class="stat">
               <b>{{ profile.stats.history }}</b>
-              <span>浏览</span>
+              <span>读过</span>
             </div>
             <div class="stat">
               <b>{{ profile.stats.likes }}</b>
@@ -47,10 +53,10 @@
           </div>
 
           <p class="pcard__game" v-if="profile.game.playCount > 0">
-            星空贪吃蛇：玩过 {{ profile.game.playCount }} 局，当前排名 第 {{ profile.game.rank }} 名
+            花瓣贪吃蛇：玩过 {{ profile.game.playCount }} 局，当前排名 第 {{ profile.game.rank }} 名
           </p>
           <p class="pcard__game pcard__game--muted" v-else>
-            还没有游戏记录，去玩一局星空贪吃蛇吧 →
+            还没有游戏记录，去接一捧樱瓣吧 →
             <button class="pcard__link" type="button" @click="$emit('navigate', 'game')">开始游戏</button>
           </p>
         </template>
@@ -59,7 +65,7 @@
       <!-- ============ 浏览历史 ============ -->
       <section class="hist">
         <div class="hist__head">
-          <h2 class="hist__title">浏览历史</h2>
+          <h2 class="hist__title">阅读足迹</h2>
           <button
             v-if="history.length && !histLoading"
             class="hist__clear"
@@ -86,9 +92,9 @@
         <StateBlock
           v-else-if="!history.length"
           variant="empty"
-          icon="◷"
-          title="还没有浏览记录"
-          desc="打开任意一篇文章，这里会留下你的阅读足迹。"
+          icon="✿"
+          title="还没有留下足迹"
+          desc="打开任意一篇文章，风会把花瓣留在这一页。"
           action-text="去首页看看"
           @action="$emit('navigate', 'home')"
         />
@@ -101,9 +107,9 @@
                 <p class="hcard__summary">{{ h.summary }}</p>
                 <div class="hcard__foot">
                   <span class="hcard__cat">{{ h.category }}</span>
-                  <span class="hcard__dot"></span>
+                  <span class="hcard__dot">·</span>
                   <span>{{ h.author }}</span>
-                  <span class="hcard__dot"></span>
+                  <span class="hcard__dot">·</span>
                   <span>浏览于 {{ h.viewedAt }}</span>
                 </div>
               </div>
@@ -246,24 +252,25 @@ onMounted(() => {
 
 <style scoped>
 .profile {
-  min-height: 100%;
-  padding: 18px 22px 40px;
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
 }
 
 .profile__main {
-  width: min(1080px, 100%);
-  margin: 24px auto 0;
+  max-width: 1000px;
   display: grid;
   gap: 22px;
 }
 
 /* ---------- 个人信息卡 ---------- */
 .pcard {
-  padding: 22px;
+  padding: 24px;
   border-radius: 22px;
-  border: 1px solid var(--stroke, rgba(255, 255, 255, .11));
-  background: var(--glass, rgba(255, 255, 255, .055));
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, .78);
+  box-shadow: 0 22px 46px -38px rgba(120, 60, 84, .8);
+  backdrop-filter: blur(12px);
 }
 
 .pcard__head {
@@ -273,116 +280,172 @@ onMounted(() => {
 }
 
 .pcard__avatar {
-  width: 54px;
-  height: 54px;
+  position: relative;
+  width: 56px;
+  height: 56px;
   flex: none;
-  border-radius: 16px;
+  border-radius: 18px;
   display: grid;
   place-items: center;
-  font-size: 22px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, var(--a1, #7c5cff), var(--a2, #22d3ee));
-  box-shadow: 0 12px 28px -14px var(--a1, #7c5cff);
+  background: linear-gradient(140deg, var(--sakura-400), var(--sakura-600));
+  box-shadow: 0 16px 28px -16px rgba(232, 84, 127, .9), inset 0 1px 0 rgba(255, 255, 255, .5);
 }
 
 .pcard__id { min-width: 0; }
-.pcard__name { font-size: 20px; font-weight: 650; }
-.pcard__sub { font-size: 12.5px; color: var(--muted, #8d97bd); margin-top: 4px; }
+.pcard__name {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: var(--ink);
+}
+.pcard__sub { margin: 5px 0 0; font-size: 12.5px; color: var(--muted); }
 
 .pcard__logout {
   margin-left: auto;
   height: 36px;
-  padding: 0 16px;
-  border-radius: 11px;
-  border: 1px solid var(--stroke, rgba(255, 255, 255, .11));
-  background: var(--glass, rgba(255, 255, 255, .055));
-  color: var(--muted, #8d97bd);
+  padding: 0 17px;
+  border-radius: 999px;
+  border: 1px solid var(--sakura-200);
+  background: #fff;
+  color: var(--sakura-600);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
-  transition: color .25s, border-color .25s, background .25s;
+  transition: color .25s, border-color .25s, background .25s, transform .25s;
 }
 .pcard__logout:hover {
-  color: #ffb3c0;
-  border-color: rgba(255, 95, 120, .4);
-  background: rgba(255, 95, 120, .12);
+  color: var(--sakura-700);
+  border-color: var(--sakura-400);
+  background: var(--sakura-50);
+  transform: translateY(-1px);
 }
 
 .stats {
-  margin-top: 18px;
+  margin-top: 22px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
+  gap: 0;
+  border: 1px solid var(--porcelain-line);
+  border-radius: 16px;
+  background: linear-gradient(170deg, #fff, rgba(253, 247, 248, .86));
+  box-shadow: var(--gloss), inset 0 0 0 1px rgba(255, 255, 255, .6);
+  overflow: hidden;
 }
 
+/* 四格连排：用发丝线分隔，比四张独立小卡更安静 */
 .stat {
-  padding: 14px;
-  border-radius: 16px;
-  border: 1px solid var(--stroke, rgba(255, 255, 255, .11));
-  background: rgba(255, 255, 255, .04);
+  position: relative;
+  padding: 17px 18px;
+  border: 0;
+  border-left: 1px solid var(--line-soft);
+  background: none;
   display: grid;
-  gap: 4px;
+  gap: 6px;
   text-align: left;
   font: inherit;
   color: inherit;
   cursor: default;
-  transition: transform .25s var(--ease, ease), border-color .25s;
+  transition: background .26s var(--ease);
 }
+.stat:first-child { border-left: 0; }
 button.stat { cursor: pointer; }
-button.stat:hover {
-  transform: translateY(-2px);
-  border-color: rgba(124, 92, 255, .45);
+button.stat:hover { background: rgba(255, 238, 244, .55); }
+button.stat:hover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--sakura-400), transparent);
 }
-.stat b { font-size: 22px; font-weight: 650; }
-.stat span { font-size: 12.5px; color: var(--muted, #8d97bd); }
+.stat b {
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.stat span { font-size: 11px; letter-spacing: .12em; color: var(--faint); }
 
 .pcard__game {
-  margin-top: 14px;
-  font-size: 13px;
-  color: var(--muted, #8d97bd);
+  margin: 16px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
 }
-.pcard__game--muted { opacity: .9; }
+.pcard__game--muted { opacity: .95; }
 .pcard__link {
   border: 0;
   background: none;
   font: inherit;
-  color: var(--a2, #22d3ee);
+  color: var(--sakura-600);
   cursor: pointer;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ---------- 浏览历史 ---------- */
 .hist {
-  padding: 20px 22px 22px;
+  padding: 22px;
   border-radius: 22px;
-  border: 1px solid var(--stroke, rgba(255, 255, 255, .11));
-  background: var(--glass, rgba(255, 255, 255, .04));
+  border: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, .7);
+  box-shadow: 0 20px 44px -38px rgba(120, 60, 84, .7);
 }
 
 .hist__head {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
 }
-.hist__title { font-size: 16px; font-weight: 600; }
+.hist__title {
+  position: relative;
+  margin: 0;
+  padding-left: 14px;
+  font-family: var(--font-serif);
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--ink);
+}
+.hist__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--sakura-400), var(--sakura-600));
+}
 .hist__clear {
   margin-left: auto;
-  height: 32px;
+  height: 30px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid var(--stroke, rgba(255, 255, 255, .11));
-  background: transparent;
-  color: var(--muted, #8d97bd);
+  border: 1px solid var(--sakura-200);
+  background: #fff;
+  color: var(--muted);
   font: inherit;
   font-size: 12.5px;
   cursor: pointer;
-  transition: color .25s, border-color .25s;
+  transition: color .25s, border-color .25s, background .25s;
 }
 .hist__clear:hover:not(:disabled) {
-  color: #ffb3c0;
-  border-color: rgba(255, 95, 120, .4);
+  color: var(--sakura-600);
+  border-color: var(--sakura-400);
+  background: var(--sakura-50);
 }
 .hist__clear:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -394,75 +457,79 @@ button.stat:hover {
 
 .hcard {
   position: relative;
-  padding: 14px 16px;
+  padding: 15px 17px;
   border-radius: 16px;
-  border: 1px solid var(--stroke, rgba(255, 255, 255, .1));
-  background: rgba(255, 255, 255, .035);
-  transition: transform .25s var(--ease, ease), border-color .25s, background .25s;
+  border: 1px solid var(--line-soft);
+  background: #fff;
+  transition: transform .25s var(--ease, ease), border-color .25s, box-shadow .25s;
 }
 .hcard:hover {
-  transform: translateY(-2px);
-  border-color: rgba(124, 92, 255, .4);
-  background: rgba(255, 255, 255, .06);
+  transform: translateY(-3px);
+  border-color: var(--sakura-200);
+  box-shadow: 0 20px 34px -28px rgba(120, 60, 84, .9);
 }
 
 .hcard__body { cursor: pointer; }
 .hcard__title {
+  margin: 0;
   font-size: 14.5px;
   font-weight: 600;
-  line-height: 1.4;
-  padding-right: 22px;
+  line-height: 1.45;
+  padding-right: 24px;
+  color: var(--ink);
 }
 .hcard__summary {
-  margin-top: 6px;
+  margin: 7px 0 0;
   font-size: 12.5px;
-  color: var(--muted, #8d97bd);
-  line-height: 1.55;
+  color: var(--muted);
+  line-height: 1.65;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .hcard__foot {
-  margin-top: 10px;
+  margin-top: 11px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 7px;
   font-size: 11.5px;
-  color: rgba(141, 151, 189, .9);
+  color: var(--faint);
 }
 .hcard__cat {
   padding: 2px 9px;
   border-radius: 999px;
-  background: rgba(124, 92, 255, .16);
-  color: #cbb8ff;
+  background: var(--sakura-50);
+  border: 1px solid var(--sakura-100);
+  color: var(--sakura-600);
 }
-.hcard__dot { opacity: .4; }
+.hcard__dot { opacity: .6; color: var(--sakura-300); }
 
 .hcard__del {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 11px;
+  right: 11px;
   width: 24px;
   height: 24px;
   border-radius: 50%;
   border: 1px solid transparent;
-  background: rgba(255, 255, 255, .06);
-  color: var(--muted, #8d97bd);
+  background: var(--paper-2);
+  color: var(--faint);
   font-size: 15px;
   line-height: 1;
   cursor: pointer;
-  transition: color .2s, background .2s;
+  transition: color .2s, background .2s, border-color .2s;
 }
 .hcard__del:hover {
-  color: #ffb3c0;
-  background: rgba(255, 95, 120, .16);
+  color: var(--sakura-700);
+  background: var(--sakura-100);
+  border-color: var(--sakura-200);
 }
 
 /* ---------- 分页 ---------- */
 .pager {
-  margin-top: 16px;
+  margin-top: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -470,25 +537,26 @@ button.stat:hover {
 }
 .pager__btn {
   height: 34px;
-  padding: 0 16px;
+  padding: 0 17px;
   border-radius: 999px;
-  border: 1px solid var(--stroke, rgba(255, 255, 255, .11));
-  background: var(--glass, rgba(255, 255, 255, .05));
-  color: var(--ink, #eef2ff);
+  border: 1px solid var(--sakura-200);
+  background: #fff;
+  color: var(--sakura-600);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
-  transition: background .25s, border-color .25s;
+  transition: background .25s, border-color .25s, transform .25s;
 }
 .pager__btn:hover:not(:disabled) {
-  background: rgba(124, 92, 255, .2);
-  border-color: rgba(124, 92, 255, .45);
+  background: var(--sakura-50);
+  border-color: var(--sakura-300);
+  transform: translateY(-1px);
 }
 .pager__btn:disabled { opacity: .45; cursor: not-allowed; }
-.pager__num { font-size: 13px; color: var(--muted, #8d97bd); }
+.pager__num { font-size: 13px; color: var(--muted); }
 
 @media (max-width: 640px) {
-  .profile { padding: 14px 14px 32px; }
   .pcard__logout { display: none; }
+  .pcard__name { font-size: 18px; }
 }
 </style>

@@ -1,11 +1,22 @@
 <template>
-  <!-- ============ 顶部导航（首页 / 发现 / 收藏 / 关于 / 文章详情共用） ============ -->
-  <header class="nav">
+  <!-- ============ 顶部导航（全站共用） ============ -->
+  <header class="nav" :class="{ 'nav--solid': scrolled }">
     <div class="nav__bar">
-      <!-- 品牌：点击回首页 -->
+      <!-- 品牌：一枚樱花 + 站名 -->
       <a class="nav__brand" href="#" @click.prevent="$emit('go', 'home')">
-        <span class="logo__mark"><i></i><b></b></span>
-        <span class="nav__brand-txt">AURORA</span>
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <g class="mark__petals">
+              <ellipse v-for="i in 5" :key="i" cx="16" cy="8" rx="4.4" ry="6.6"
+                       :transform="`rotate(${(i - 1) * 72} 16 16)`" />
+            </g>
+            <circle cx="16" cy="16" r="2.6" class="mark__core" />
+          </svg>
+        </span>
+        <span class="nav__brand-txt">
+          <b>樱见</b>
+          <i>SAKURA NOTE</i>
+        </span>
       </a>
 
       <!-- 导航菜单（≥900px 常驻） -->
@@ -18,11 +29,11 @@
           type="button"
           @click="$emit('go', item.key)"
         >
-          {{ item.label }}
+          <span>{{ item.label }}</span>
         </button>
       </nav>
 
-      <!-- 用户区（头像可点，直达个人中心） -->
+      <!-- 用户区 -->
       <div class="nav__user">
         <button
           class="nav__avatar"
@@ -42,10 +53,10 @@
             <path d="M20 12H9" />
             <path d="M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6" />
           </svg>
-          退出
+          <span>离开</span>
         </button>
 
-        <!-- 汉堡按钮：<900px 才出现，打开移动端抽屉 -->
+        <!-- 汉堡按钮：<900px 才出现 -->
         <button
           class="nav__burger"
           type="button"
@@ -60,13 +71,13 @@
     </div>
   </header>
 
-  <!-- 移动端抽屉：Teleport 到 body，避开 .nav__bar 的 backdrop-filter 造成的定位容器 -->
+  <!-- 移动端抽屉：Teleport 到 body，避开 backdrop-filter 造成的定位容器 -->
   <Teleport to="body">
     <Transition name="md">
       <div v-if="open" class="md" role="dialog" aria-modal="true" aria-label="导航菜单" @click.self="close">
         <div class="md__panel">
           <div class="md__head">
-            <span class="md__head-title">导航</span>
+            <span class="md__head-title">花名册</span>
             <button class="md__close" type="button" aria-label="关闭菜单" @click="close">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
                    stroke-linecap="round">
@@ -117,69 +128,57 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   user: { type: Object, default: null },
-  /** 当前高亮的菜单 key：home / discover / favorites / about / game */
+  /** 当前高亮的菜单 key */
   active: { type: String, default: 'home' }
 })
 const emit = defineEmits(['go', 'logout'])
 
 const menus = [
   { key: 'home', label: '首页' },
-  { key: 'discover', label: '发现' },
-  { key: 'game', label: '游戏' },
-  { key: 'favorites', label: '收藏' },
+  { key: 'discover', label: '漫游' },
+  { key: 'game', label: '小游戏' },
+  { key: 'favorites', label: '书签' },
   { key: 'profile', label: '我的' },
   { key: 'about', label: '关于' }
 ]
 
-const userName = computed(() => (props.user && props.user.name) || '探险家')
+const userName = computed(() => (props.user && props.user.name) || '旅人')
 const userSub = computed(() => {
   const id = props.user && props.user.id
   return id != null ? `ID · ${id}` : '已登录'
 })
 const avatarText = computed(() => {
   const n = userName.value
-  return n ? n.slice(0, 1).toUpperCase() : 'A'
+  return n ? n.slice(0, 1).toUpperCase() : '樱'
 })
+
+/* 滚动后导航加一点实底，避免和内容糊在一起 */
+const scrolled = ref(false)
+function onScroll () { scrolled.value = (window.scrollY || 0) > 12 }
 
 /* ---------------- 移动端抽屉 ---------------- */
 const open = ref(false)
 
-/** 抽屉打开时锁住背景滚动，关闭时还原原来的内联值（可能为空） */
 let prevOverflow = ''
 function lockScroll () {
   prevOverflow = document.body.style.overflow
   document.body.style.overflow = 'hidden'
 }
 function unlockScroll () {
-  // 原来没有内联值时直接移除属性，别在 body 上留一个空的 style=""
   if (prevOverflow) document.body.style.overflow = prevOverflow
   else document.body.style.removeProperty('overflow')
 }
 
-function close () {
-  open.value = false
-}
-function pick (key) {
-  close()
-  emit('go', key)
-}
-function onLogout () {
-  close()
-  emit('logout')
-}
+function close () { open.value = false }
+function pick (key) { close(); emit('go', key) }
+function onLogout () { close(); emit('logout') }
 
-/** ESC 关闭 */
-function onKeydown (e) {
-  if (e.key === 'Escape') close()
-}
-/** 转回桌面宽度时自动收起，避免抽屉悬在大屏上 */
-function onResize () {
-  if (window.innerWidth > 900) close()
-}
+function onKeydown (e) { if (e.key === 'Escape') close() }
+function onResize () { if (window.innerWidth > 900) close() }
 
 watch(open, (v) => {
   if (v) {
@@ -193,89 +192,103 @@ watch(open, (v) => {
   }
 })
 
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})
+
 onBeforeUnmount(() => {
   if (open.value) unlockScroll()
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', onResize)
+  window.removeEventListener('scroll', onScroll)
 })
 </script>
 
 <style scoped>
-/* ============ 顶部导航 ============ */
+/* ============ 顶部导航：樱花玻璃胶囊 ============ */
 .nav {
   position: sticky;
-  top: 18px;
-  z-index: 5;
+  top: 14px;
+  z-index: 40;
 }
 .nav__bar {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 18px;
   height: 68px;
-  padding: 0 20px;
-  border-radius: 20px;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.06)),
-    rgba(10, 12, 26, 0.72);
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-  border: 1px solid var(--stroke);
-  box-shadow: 0 26px 60px -30px rgba(0, 0, 0, 0.95);
-  will-change: transform;
+  padding: 0 16px 0 18px;
+  border-radius: 22px;
+  background: rgba(255, 250, 252, .72);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, .9);
+  box-shadow:
+    0 20px 46px -30px rgba(147, 81, 108, .55),
+    0 1px 0 rgba(255, 255, 255, .9) inset;
+  transition: box-shadow .4s, background .4s, border-color .4s;
+}
+.nav--solid .nav__bar {
+  background: rgba(255, 248, 251, .9);
+  border-color: rgba(255, 214, 229, .9);
+  box-shadow:
+    0 26px 54px -30px rgba(147, 81, 108, .6),
+    0 1px 0 rgba(255, 255, 255, .95) inset;
 }
 
 /* 品牌 */
 .nav__brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   text-decoration: none;
   flex: none;
   cursor: pointer;
-  transition: opacity 0.25s;
+  transition: opacity .25s, transform .35s var(--ease);
 }
-.nav__brand:hover {
-  opacity: 0.85;
-}
-.nav__brand .logo__mark {
+.nav__brand:hover { transform: translateY(-1px); }
+.mark {
   width: 34px;
   height: 34px;
-  position: relative;
   display: grid;
   place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(150deg, #fff, var(--sakura-100));
+  box-shadow: 0 6px 16px -10px rgba(232, 84, 127, .8), 0 0 0 1px rgba(255, 196, 217, .7) inset;
 }
-.nav__brand .logo__mark i {
-  position: absolute;
-  inset: 0;
-  border-radius: 11px;
-  border: 1.5px solid;
-  border-color: transparent;
-  background: conic-gradient(from 140deg, var(--a2), var(--a1), var(--a3), var(--a2)) border-box;
-  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: spin 5s linear infinite;
+.mark svg { width: 24px; height: 24px; }
+.mark__petals ellipse { fill: var(--sakura-400); }
+.mark__petals ellipse:nth-child(2n) { fill: var(--sakura-500); }
+.mark__core { fill: #fff8fb; }
+.nav__brand:hover .mark svg { animation: bloom .8s var(--ease); }
+@keyframes bloom {
+  0% { transform: rotate(0) scale(1); }
+  60% { transform: rotate(36deg) scale(1.14); }
+  100% { transform: rotate(72deg) scale(1); }
 }
-.nav__brand .logo__mark b {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: linear-gradient(140deg, var(--a2), var(--a1));
-  box-shadow: 0 0 16px var(--a1);
+.nav__brand-txt { display: flex; flex-direction: column; line-height: 1.15; }
+.nav__brand-txt b {
+  font-family: var(--font-serif);
+  font-size: 16.5px;
+  font-weight: 900;
+  letter-spacing: .22em;
+  color: var(--ink);
 }
-.nav__brand-txt {
-  font-size: 13.5px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  color: #cfd6ff;
+.nav__brand-txt i {
+  font-style: normal;
+  font-size: 8.5px;
+  letter-spacing: .26em;
+  color: var(--faint);
 }
 
 /* 菜单 */
 .nav__menu {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-left: 6px;
+  gap: 2px;
+  margin-left: 10px;
+  padding-left: 12px;
+  border-left: 1px solid var(--line-soft);
 }
 .nav__item {
   position: relative;
@@ -283,28 +296,35 @@ onBeforeUnmount(() => {
   background: none;
   color: var(--muted);
   font: inherit;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
-  padding: 9px 15px;
-  border-radius: 11px;
+  letter-spacing: .06em;
+  padding: 10px 13px;
+  border-radius: 13px;
   cursor: pointer;
-  transition: color 0.3s, background 0.3s;
+  transition: color .3s, background .3s;
 }
-.nav__item:hover {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.06);
-}
-.nav__item.on {
-  color: #fff;
-  background: linear-gradient(120deg, rgba(124, 92, 255, 0.9), rgba(34, 211, 238, 0.75));
-  box-shadow: 0 8px 20px -8px var(--a1);
+.nav__item span { position: relative; z-index: 1; }
+.nav__item:hover { color: var(--sakura-700); background: rgba(255, 226, 238, .66); }
+.nav__item.on { color: var(--sakura-700); }
+.nav__item.on::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 16px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--sakura-400), var(--sakura-600));
+  transform: translateX(-50%);
+  box-shadow: 0 2px 8px -2px rgba(232, 84, 127, .9);
 }
 
 /* 用户区 */
 .nav__user {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   margin-left: auto;
   flex: none;
 }
@@ -314,29 +334,21 @@ onBeforeUnmount(() => {
   flex: none;
   display: grid;
   place-items: center;
-  border-radius: 12px;
-  border: 1px solid transparent;
+  border-radius: 50%;
+  border: 2px solid #fff;
   font: inherit;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--a1), var(--a2));
-  box-shadow: 0 8px 20px -10px var(--a1);
-  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  background: linear-gradient(135deg, var(--sakura-400), var(--sakura-600));
+  box-shadow: 0 8px 18px -10px rgba(232, 84, 127, .95);
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
 }
-.nav__avatar:hover {
-  transform: translateY(-1px) scale(1.04);
-  box-shadow: 0 12px 24px -10px var(--a1);
-}
-.nav__meta {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.35;
-  min-width: 0;
-}
+.nav__avatar:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 12px 24px -10px rgba(232, 84, 127, 1); }
+.nav__meta { display: flex; flex-direction: column; line-height: 1.35; min-width: 0; }
 .nav__meta b {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink);
   white-space: nowrap;
@@ -344,39 +356,32 @@ onBeforeUnmount(() => {
   text-overflow: ellipsis;
   max-width: 12ch;
 }
-.nav__meta span {
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 0.05em;
-}
+.nav__meta span { font-size: 10.5px; color: var(--faint); letter-spacing: .08em; }
 .nav__logout {
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 38px;
-  padding: 0 15px;
-  border-radius: 11px;
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 12px;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--muted);
-  background: var(--glass);
-  border: 1px solid var(--stroke);
-  transition: color 0.25s, background 0.25s, border-color 0.25s, transform 0.25s var(--ease);
+  background: rgba(255, 255, 255, .7);
+  border: 1px solid var(--line);
+  transition: color .25s, background .25s, border-color .25s, transform .25s var(--ease);
 }
 .nav__logout:hover {
-  color: #ffb3c0;
-  background: rgba(255, 95, 120, 0.12);
-  border-color: rgba(255, 95, 120, 0.4);
+  color: var(--sakura-700);
+  background: var(--sakura-100);
+  border-color: var(--sakura-300);
   transform: translateY(-1px);
 }
-.nav__logout svg {
-  width: 15px;
-  height: 15px;
-}
+.nav__logout svg { width: 15px; height: 15px; }
 
-/* 汉堡按钮（桌面隐藏） */
+/* 汉堡 */
 .nav__burger {
   display: none;
   flex-direction: column;
@@ -385,36 +390,31 @@ onBeforeUnmount(() => {
   width: 40px;
   height: 38px;
   padding: 0 10px;
-  border-radius: 11px;
+  border-radius: 12px;
   cursor: pointer;
-  background: var(--glass);
-  border: 1px solid var(--stroke);
-  transition: background 0.25s, border-color 0.25s;
+  background: rgba(255, 255, 255, .7);
+  border: 1px solid var(--line);
+  transition: background .25s, border-color .25s;
 }
 .nav__burger i {
   display: block;
-  height: 1.6px;
+  height: 1.7px;
   width: 100%;
   border-radius: 2px;
-  background: #cfd6ff;
-  transition: opacity 0.2s;
+  background: var(--sakura-600);
+  transition: opacity .2s;
 }
-.nav__burger i:nth-child(2) {
-  width: 70%;
-}
-.nav__burger:hover {
-  background: var(--glass-2);
-  border-color: rgba(255, 255, 255, 0.2);
-}
+.nav__burger i:nth-child(2) { width: 70%; }
+.nav__burger:hover { background: var(--sakura-100); border-color: var(--sakura-300); }
 
 /* ============ 移动端抽屉 ============ */
 .md {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 80;
   display: flex;
   justify-content: flex-end;
-  background: rgba(4, 5, 14, 0.62);
+  background: rgba(80, 40, 60, .34);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -424,11 +424,9 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
-  background:
-    linear-gradient(170deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.05)),
-    rgba(9, 11, 24, 0.96);
-  border-left: 1px solid var(--stroke);
-  box-shadow: -30px 0 70px -30px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(175deg, #fffafc, #fff1f6);
+  border-left: 1px solid var(--line);
+  box-shadow: -30px 0 70px -30px rgba(147, 81, 108, .45);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -439,32 +437,26 @@ onBeforeUnmount(() => {
   padding: 2px 2px 14px;
 }
 .md__head-title {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  color: var(--muted);
-  text-transform: uppercase;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .3em;
+  color: var(--sakura-700);
 }
 .md__close {
   width: 34px;
   height: 34px;
   display: grid;
   place-items: center;
-  border-radius: 10px;
+  border-radius: 11px;
   cursor: pointer;
   color: var(--muted);
-  background: var(--glass);
-  border: 1px solid var(--stroke);
-  transition: color 0.2s, background 0.2s;
+  background: #fff;
+  border: 1px solid var(--line);
+  transition: color .2s, background .2s;
 }
-.md__close:hover {
-  color: var(--ink);
-  background: var(--glass-2);
-}
-.md__close svg {
-  width: 16px;
-  height: 16px;
-}
+.md__close:hover { color: var(--sakura-700); background: var(--sakura-100); }
+.md__close svg { width: 16px; height: 16px; }
 
 .md__user {
   display: flex;
@@ -472,9 +464,10 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 14px;
   margin-bottom: 14px;
-  border-radius: 16px;
-  background: var(--glass);
-  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  box-shadow: var(--shadow-sm);
 }
 .md__avatar {
   width: 42px;
@@ -482,19 +475,14 @@ onBeforeUnmount(() => {
   flex: none;
   display: grid;
   place-items: center;
-  border-radius: 13px;
+  border-radius: 50%;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, var(--a1), var(--a2));
-  box-shadow: 0 8px 20px -10px var(--a1);
+  background: linear-gradient(135deg, var(--sakura-400), var(--sakura-600));
+  box-shadow: 0 8px 18px -10px rgba(232, 84, 127, .95);
 }
-.md__user-info {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.4;
-  min-width: 0;
-}
+.md__user-info { display: flex; flex-direction: column; line-height: 1.4; min-width: 0; }
 .md__user-info b {
   font-size: 14px;
   font-weight: 600;
@@ -503,58 +491,36 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.md__user-info span {
-  font-size: 11.5px;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-}
+.md__user-info span { font-size: 11.5px; color: var(--faint); letter-spacing: .06em; }
 
-.md__list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.md__list { display: flex; flex-direction: column; gap: 4px; }
 .md__item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   padding: 13px 14px;
-  border-radius: 13px;
+  border-radius: 14px;
   border: 1px solid transparent;
   background: none;
-  color: var(--muted);
+  color: var(--ink-soft);
   font: inherit;
   font-size: 15px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  transition: color .2s, background .2s, border-color .2s;
 }
-.md__item svg {
-  width: 16px;
-  height: 16px;
-  opacity: 0.45;
-  transition: opacity 0.2s, transform 0.2s var(--ease);
-}
-.md__item:hover,
-.md__item:active {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.06);
-}
-.md__item:hover svg {
-  opacity: 1;
-  transform: translateX(2px);
-}
+.md__item svg { width: 16px; height: 16px; opacity: .4; transition: opacity .2s, transform .2s var(--ease); }
+.md__item:hover { color: var(--sakura-700); background: var(--sakura-100); }
+.md__item:hover svg { opacity: 1; transform: translateX(2px); }
 .md__item.on {
-  color: #fff;
-  background: linear-gradient(120deg, rgba(124, 92, 255, 0.85), rgba(34, 211, 238, 0.6));
-  border-color: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 10px 24px -14px var(--a1);
+  color: var(--sakura-700);
+  background: linear-gradient(120deg, #ffe6ef, #fff2f7);
+  border-color: var(--sakura-300);
+  font-weight: 600;
 }
-.md__item.on svg {
-  opacity: 0.95;
-}
+.md__item.on svg { opacity: .9; }
 
 .md__logout {
   display: flex;
@@ -563,76 +529,41 @@ onBeforeUnmount(() => {
   gap: 7px;
   margin-top: auto;
   padding: 13px;
-  border-radius: 13px;
+  border-radius: 14px;
   cursor: pointer;
   font: inherit;
   font-size: 14px;
   font-weight: 500;
   color: var(--muted);
-  background: var(--glass);
-  border: 1px solid var(--stroke);
-  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  background: #fff;
+  border: 1px solid var(--line);
+  transition: color .2s, background .2s, border-color .2s;
 }
-.md__logout:hover {
-  color: #ffb3c0;
-  background: rgba(255, 95, 120, 0.12);
-  border-color: rgba(255, 95, 120, 0.4);
-}
-.md__logout svg {
-  width: 15px;
-  height: 15px;
-}
+.md__logout:hover { color: var(--sakura-700); background: var(--sakura-100); border-color: var(--sakura-300); }
+.md__logout svg { width: 15px; height: 15px; }
 
-/* 进出场：遮罩淡入 + 面板右滑 */
-.md-enter-active,
-.md-leave-active {
-  transition: opacity 0.26s var(--ease);
-}
-.md-enter-active .md__panel,
-.md-leave-active .md__panel {
-  transition: transform 0.3s var(--ease);
-}
-.md-enter-from,
-.md-leave-to {
-  opacity: 0;
-}
-.md-enter-from .md__panel,
-.md-leave-to .md__panel {
-  transform: translateX(100%);
-}
+/* 进出场 */
+.md-enter-active, .md-leave-active { transition: opacity .26s var(--ease); }
+.md-enter-active .md__panel, .md-leave-active .md__panel { transition: transform .3s var(--ease); }
+.md-enter-from, .md-leave-to { opacity: 0; }
+.md-enter-from .md__panel, .md-leave-to .md__panel { transform: translateX(100%); }
 
 @media (max-width: 900px) {
-  .nav__menu {
-    display: none;
-  }
-  .nav__logout {
-    display: none;
-  }
-  .nav__burger {
-    display: flex;
-  }
+  .nav { top: 10px; }
+  .nav__menu { display: none; }
+  .nav__logout { display: none; }
+  .nav__burger { display: flex; }
+  .nav__bar { gap: 12px; }
 }
 @media (max-width: 640px) {
-  .nav__brand-txt {
-    display: none;
-  }
-  .nav__meta {
-    display: none;
-  }
+  .nav__brand-txt i { display: none; }
+  .nav__meta { display: none; }
   .nav__bar {
     height: 60px;
-    padding: 0 14px;
-    gap: 12px;
-    border-radius: 17px;
+    padding: 0 12px 0 12px;
+    border-radius: 18px;
   }
-  .nav__avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 11px;
-    font-size: 14px;
-  }
-  .nav__burger {
-    height: 34px;
-  }
+  .nav__avatar { width: 34px; height: 34px; font-size: 14px; }
+  .nav__burger { height: 34px; width: 36px; }
 }
 </style>

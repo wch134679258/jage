@@ -1,5 +1,5 @@
 <template>
-  <!-- 内容条目：编号 + 标题 + 摘要 + 元信息。首页「全部内容」用 -->
+  <!-- 内容条目：小封面 + 序号 + 标题 + 摘要 + 元信息。首页内容流用 -->
   <article
     class="row"
     :class="{ 'row--fav': favorited }"
@@ -9,10 +9,16 @@
     @click="$emit('open', article.id)"
     @keydown.enter="$emit('open', article.id)"
   >
-    <span class="row__no" aria-hidden="true">{{ indexLabel }}</span>
+    <!-- 缩略图：封面按 id 稳定取图，加载失败则退回樱色渐变底 -->
+    <div class="row__thumb" :style="{ backgroundImage: 'url(' + cover + ')' }" aria-hidden="true">
+      <span class="row__thumb-veil"></span>
+    </div>
 
     <div class="row__body">
-      <h3 class="row__title">{{ article.title }}</h3>
+      <div class="row__head">
+        <span class="row__no" aria-hidden="true">{{ indexLabel }}</span>
+        <h3 class="row__title">{{ article.title }}</h3>
+      </div>
       <p v-if="article.summary" class="row__sum">{{ article.summary }}</p>
       <div class="row__meta">
         <button
@@ -40,7 +46,7 @@
     </div>
 
     <div class="row__side">
-      <span class="row__views" :title="article.views + ' 次浏览'">
+      <span class="row__views" :title="article.views + ' 次阅读'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
@@ -54,8 +60,8 @@
         class="row__fav"
         :class="{ 'row__fav--on': favorited }"
         type="button"
-        :title="favorited ? '取消收藏' : '收藏'"
-        :aria-label="favorited ? '取消收藏' : '收藏'"
+        :title="favorited ? '取消书签' : '加入书签'"
+        :aria-label="favorited ? '取消书签' : '加入书签'"
         @click.stop="$emit('toggle-fav', article)"
       >
         <svg viewBox="0 0 24 24" :fill="favorited ? 'currentColor' : 'none'" stroke="currentColor"
@@ -69,6 +75,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { coverFor } from '../utils/cover'
 
 const props = defineProps({
   article: { type: Object, required: true },
@@ -80,11 +87,12 @@ const props = defineProps({
 defineEmits(['open', 'open-category', 'open-tag', 'toggle-fav'])
 
 const indexLabel = computed(() => String(props.index).padStart(2, '0'))
+const cover = computed(() => coverFor(props.article.id))
 
 /** createdAt 形如 2026-10-22 00:00:00，列表里只需要日期部分 */
 function shortDate (v) {
   const s = String(v || '')
-  return s.length >= 10 ? s.slice(0, 10) : s
+  return s.length >= 10 ? s.slice(5, 10).replace('-', '/') : s
 }
 </script>
 
@@ -92,75 +100,95 @@ function shortDate (v) {
 .row {
   position: relative;
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto;
-  align-items: start;
+  grid-template-columns: 116px minmax(0, 1fr) auto;
+  align-items: center;
   gap: 18px;
-  padding: 20px 14px 20px 12px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 18px;
   cursor: pointer;
-  transition: background 0.3s, transform 0.3s var(--ease);
+  border: 1px solid transparent;
+  transition: background .38s var(--ease), border-color .38s var(--ease),
+              transform .38s var(--ease), box-shadow .38s var(--ease);
 }
-/* 左侧高亮条：悬停/聚焦时从中间长出来 */
+/* 悬停：白瓷底浮起 + 左侧樱色发丝线，不用整块粉色填充 */
 .row::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
-  top: 50%;
+  top: 22%;
+  bottom: 22%;
   width: 2px;
-  height: 0;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--a2), var(--a1));
-  transform: translateY(-50%);
-  transition: height 0.32s var(--ease);
+  background: linear-gradient(180deg, transparent, var(--sakura-400), transparent);
+  opacity: 0;
+  transform: scaleY(.4);
+  transition: opacity .38s var(--ease), transform .38s var(--ease);
 }
 .row:hover,
 .row:focus-visible {
-  background: rgba(255, 255, 255, 0.038);
+  background: var(--porcelain);
+  border-color: var(--porcelain-line);
+  box-shadow: var(--gloss), var(--lift-hover);
+  transform: translateX(4px);
   outline: none;
 }
 .row:hover::before,
 .row:focus-visible::before {
-  height: 56%;
+  opacity: 1;
+  transform: scaleY(1);
 }
 
-/* 编号 */
-.row__no {
-  font-size: 12.5px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  font-variant-numeric: tabular-nums;
-  color: rgba(141, 151, 189, 0.55);
-  padding-top: 3px;
-  transition: color 0.3s;
+/* 缩略图 */
+.row__thumb {
+  position: relative;
+  width: 116px;
+  height: 76px;
+  border-radius: 14px;
+  background-color: var(--sakura-100);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  box-shadow: 0 8px 20px -14px rgba(147, 81, 108, .8);
 }
-.row:hover .row__no {
-  color: var(--a2);
+.row__thumb-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 240, 246, .28), transparent 60%);
+  transition: opacity .4s;
 }
+.row:hover .row__thumb-veil { opacity: 0; }
 
 /* 正文 */
-.row__body {
-  min-width: 0;
-}
-.row__title {
-  font-size: 16.5px;
+.row__body { min-width: 0; }
+.row__head { display: flex; align-items: baseline; gap: 10px; }
+.row__no {
+  flex: none;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.45;
-  letter-spacing: -0.005em;
+  letter-spacing: .08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--sakura-300);
+  transition: color .3s;
+}
+.row:hover .row__no { color: var(--sakura-500); }
+.row__title {
+  font-family: var(--font-serif);
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: .01em;
   color: var(--ink);
-  transition: color 0.28s;
+  transition: color .28s;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-.row:hover .row__title {
-  color: #c9ccff;
-}
+.row:hover .row__title { color: var(--sakura-700); }
 .row__sum {
-  margin-top: 5px;
-  font-size: 13px;
-  font-weight: 300;
-  line-height: 1.6;
+  margin-top: 4px;
+  font-size: 12.5px;
+  line-height: 1.7;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -170,36 +198,29 @@ function shortDate (v) {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 9px;
+  gap: 7px;
+  margin-top: 8px;
   font-size: 11.5px;
-  color: var(--muted);
+  color: var(--faint);
 }
 .row__cat {
-  border: 1px solid rgba(124, 92, 255, 0.32);
-  background: rgba(124, 92, 255, 0.1);
-  color: #b9b0ff;
+  border: 1px solid var(--sakura-200);
+  background: var(--sakura-50);
+  color: var(--sakura-700);
   font: inherit;
-  font-size: 11px;
+  font-size: 10.5px;
   padding: 2px 9px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.25s, border-color 0.25s, color 0.25s;
+  transition: background .25s, border-color .25s, color .25s;
 }
-.row__cat:hover {
-  background: rgba(124, 92, 255, 0.24);
-  border-color: rgba(124, 92, 255, 0.6);
-  color: #ddd8ff;
-}
-.row__dim {
-  font-weight: 300;
-  letter-spacing: 0.02em;
-}
+.row__cat:hover { background: var(--sakura-500); border-color: transparent; color: #fff; }
+.row__dim { font-weight: 300; letter-spacing: .02em; }
 .row__dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: rgba(141, 151, 189, 0.45);
+  background: var(--sakura-300);
   flex: none;
 }
 .row__tag {
@@ -208,25 +229,18 @@ function shortDate (v) {
   padding: 0;
   font: inherit;
   font-size: 11.5px;
-  color: rgba(141, 151, 189, 0.9);
+  color: var(--muted);
   cursor: pointer;
-  transition: color 0.25s;
+  transition: color .25s;
 }
-.row__tag::before {
-  content: "#";
-  opacity: 0.55;
-  margin-right: 1px;
-}
-.row__tag:hover {
-  color: var(--a2);
-}
+.row__tag::before { content: "#"; opacity: .55; margin-right: 1px; }
+.row__tag:hover { color: var(--sky-600); }
 
-/* 右侧：浏览数 + 收藏 */
+/* 右侧 */
 .row__side {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-top: 1px;
+  gap: 8px;
   flex: none;
 }
 .row__views {
@@ -235,81 +249,47 @@ function shortDate (v) {
   gap: 4px;
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
-  color: rgba(141, 151, 189, 0.75);
+  color: var(--faint);
   white-space: nowrap;
 }
-.row__views svg {
-  width: 13px;
-  height: 13px;
-  opacity: 0.6;
-}
+.row__views svg { width: 13px; height: 13px; opacity: .65; }
 .row__fav {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
-  border-radius: 9px;
+  border-radius: 50%;
   border: 1px solid transparent;
   background: none;
-  color: rgba(141, 151, 189, 0.6);
+  color: var(--faint);
   cursor: pointer;
-  transition: color 0.25s, background 0.25s, border-color 0.25s, transform 0.25s var(--ease);
+  transition: color .25s, background .25s, border-color .25s, transform .25s var(--ease);
 }
-.row__fav svg {
-  width: 15px;
-  height: 15px;
-}
+.row__fav svg { width: 15px; height: 15px; }
 .row__fav:hover {
-  color: #ffd76e;
-  background: rgba(255, 215, 110, 0.1);
-  border-color: rgba(255, 215, 110, 0.3);
-  transform: translateY(-1px);
+  color: var(--sakura-500);
+  background: var(--sakura-100);
+  border-color: var(--sakura-200);
+  transform: translateY(-1px) scale(1.06);
 }
-.row__fav--on {
-  color: #ffd76e;
-}
-.row--fav .row__title {
-  color: #f4e7c6;
-}
+.row__fav--on { color: var(--sakura-500); }
+.row--fav .row__title { color: var(--sakura-700); }
 
-@media (max-width: 720px) {
-  .row {
-    grid-template-columns: 30px minmax(0, 1fr) auto;
-    gap: 11px;
-    padding: 15px 8px 15px 4px;
-  }
-  .row__title {
-    font-size: 15.5px;
-  }
-  .row__sum {
-    display: none;
-  }
-  .row__meta {
-    margin-top: 7px;
-    font-size: 11px;
-    gap: 5px;
-  }
-  .row__no {
-    font-size: 11px;
-    padding-top: 4px;
-  }
-  .row__views {
-    font-size: 11px;
-  }
-  .row__views svg {
-    width: 12px;
-    height: 12px;
-  }
-  .row__fav {
-    width: 28px;
-    height: 28px;
-  }
+@media (max-width: 820px) {
+  .row { grid-template-columns: 84px minmax(0, 1fr) auto; gap: 12px; padding: 10px; }
+  .row__thumb { width: 84px; height: 62px; border-radius: 12px; }
+  .row__title { font-size: 15px; }
+  .row__sum { display: none; }
+  .row__no { display: none; }
+}
+@media (max-width: 520px) {
+  .row { grid-template-columns: 68px minmax(0, 1fr) auto; gap: 10px; }
+  .row__thumb { width: 68px; height: 54px; }
+  .row__meta { margin-top: 6px; gap: 5px; font-size: 11px; }
+  .row__views { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .row,
-  .row::before {
-    transition: none;
-  }
+  .row { transition: none; }
 }
 </style>

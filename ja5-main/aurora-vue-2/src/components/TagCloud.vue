@@ -66,63 +66,49 @@ function tagTitle (t) {
   border: 1px solid transparent;
   background: none;
   padding: 4px 8px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font: inherit;
   font-weight: 400;
   line-height: 1.3;
   color: var(--muted);
-  transition: color 0.25s, background 0.25s, border-color 0.25s, transform 0.25s var(--ease);
+  transition: color .25s, background .25s, border-color .25s, transform .25s var(--ease);
 }
 .cloud__tag::before {
   content: "#";
-  opacity: 0.42;
+  opacity: .38;
   margin-right: 1px;
-  font-size: 0.86em;
+  font-size: .86em;
+  color: var(--sakura-400);
 }
 .cloud__tag sup {
   font-size: 9px;
-  opacity: 0.6;
+  opacity: .6;
   transform: translateY(-1px);
 }
 .cloud__tag:hover {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.055);
-  border-color: var(--stroke);
+  color: var(--sakura-700);
+  background: var(--sakura-100);
+  border-color: var(--sakura-200);
+  transform: translateY(-1px);
 }
 .cloud__tag--on {
   color: #fff;
-  background: rgba(124, 92, 255, 0.3);
-  border-color: rgba(124, 92, 255, 0.6);
+  background: linear-gradient(120deg, var(--sakura-500), var(--sakura-400));
+  border-color: transparent;
+  box-shadow: 0 8px 18px -10px rgba(232, 84, 127, .95);
 }
+.cloud__tag--on::before { color: rgba(255, 255, 255, .75); }
 
-/* 四档字号 + 透明度：越大越亮，形成视觉重心 */
-.cloud__tag--s1 {
-  font-size: 12px;
-  color: rgba(141, 151, 189, 0.72);
-}
-.cloud__tag--s2 {
-  font-size: 13px;
-  color: rgba(160, 170, 205, 0.85);
-}
-.cloud__tag--s3 {
-  font-size: 14.5px;
-  color: #c3cbe8;
-}
-.cloud__tag--s4 {
-  font-size: 16px;
-  font-weight: 500;
-  color: #e6ebff;
-}
+/* 四档字号 + 浓度：越大越深，形成视觉重心 */
+.cloud__tag--s1 { font-size: 12px; color: var(--faint); }
+.cloud__tag--s2 { font-size: 13px; color: var(--muted); }
+.cloud__tag--s3 { font-size: 14.5px; color: var(--ink-soft); }
+.cloud__tag--s4 { font-size: 16px; font-weight: 600; color: var(--ink); }
 .cloud__tag--s3::before,
-.cloud__tag--s4::before {
-  opacity: 0.55;
-  color: var(--a2);
-}
+.cloud__tag--s4::before { opacity: .66; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cloud__tag {
-    transition: none;
-  }
+  .cloud__tag { transition: none; }
 }
 </style>

@@ -4,8 +4,8 @@ import { reactive, ref, computed, onBeforeUnmount } from 'vue'
 import { getCaptcha, registerUser, loginUser } from '../api/auth'
 
 const COPY = {
-  login:  { t: '欢迎回来', s: '登录后继续你的探索之旅', b: '登 录' },
-  signup: { t: '创建账号', s: '加入我们，开启星海之旅', b: '注 册' }
+  login:  { t: '欢迎回来', s: '登录后继续你的春日漫游', b: '登 录' },
+  signup: { t: '创建账号', s: '加入我们，一起收集春日', b: '注 册' }
 }
 
 export function useAuthForm (emit) {

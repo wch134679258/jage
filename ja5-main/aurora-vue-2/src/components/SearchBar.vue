@@ -308,37 +308,28 @@ defineExpose({ focus: () => inputEl.value && inputEl.value.focus() })
 </script>
 
 <style scoped>
-/* ============ 外壳：玻璃胶囊 ============ */
+/* ============ 外壳：白瓷胶囊 + 樱粉光晕 ============ */
 .search {
   position: relative;
   width: 100%;
   border-radius: 999px;
-  transition: transform 0.35s var(--ease);
+  transition: transform .35s var(--ease);
 }
-.search.is-focus {
-  transform: translateY(-2px);
-}
+.search.is-focus { transform: translateY(-2px); }
 
-/* 聚焦时的极光光晕（背后模糊光斑） */
 .search__glow {
   position: absolute;
-  inset: -2px;
+  inset: -3px;
   border-radius: 999px;
   opacity: 0;
-  transition: opacity 0.45s var(--ease);
-  background: conic-gradient(
-    from 140deg,
-    var(--a2),
-    var(--a1) 40%,
-    var(--a3) 65%,
-    var(--a2)
-  );
-  filter: blur(14px);
+  transition: opacity .45s var(--ease);
+  background: conic-gradient(from 140deg, var(--sakura-300), var(--sakura-500) 34%, var(--sky-400) 62%, var(--sakura-300));
+  filter: blur(16px);
   pointer-events: none;
 }
 .search.is-focus .search__glow {
-  opacity: 0.55;
-  animation: spin 7s linear infinite;
+  opacity: .7;
+  animation: spin 8s linear infinite;
 }
 
 .search__inner {
@@ -349,35 +340,31 @@ defineExpose({ focus: () => inputEl.value && inputEl.value.focus() })
   height: 58px;
   padding: 0 8px 0 20px;
   border-radius: 999px;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.06)),
-    rgba(10, 12, 26, 0.72);
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-  border: 1px solid var(--stroke);
-  box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.9);
-  transition: border-color 0.35s, box-shadow 0.35s;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255, 214, 229, .95);
+  box-shadow:
+    0 18px 40px -26px rgba(147, 81, 108, .6),
+    0 1px 0 rgba(255, 255, 255, .95) inset;
+  transition: border-color .35s, box-shadow .35s;
 }
 .search.is-focus .search__inner {
-  border-color: rgba(124, 92, 255, 0.55);
+  border-color: var(--sakura-300);
   box-shadow:
-    0 0 0 4px rgba(124, 92, 255, 0.12),
-    0 24px 60px -26px rgba(124, 92, 255, 0.75);
+    0 0 0 4px rgba(249, 116, 159, .12),
+    0 24px 50px -26px rgba(232, 84, 127, .6);
 }
 
-/* ============ 放大镜图标 ============ */
 .search__ico {
   width: 20px;
   height: 20px;
   flex: none;
-  color: var(--muted);
-  transition: color 0.3s;
+  color: var(--sakura-400);
+  transition: color .3s;
 }
-.search.is-focus .search__ico {
-  color: var(--a2);
-}
+.search.is-focus .search__ico { color: var(--sakura-500); }
 
-/* ============ 输入框 ============ */
 .search__input {
   flex: 1;
   min-width: 0;
@@ -389,19 +376,11 @@ defineExpose({ focus: () => inputEl.value && inputEl.value.focus() })
   font: inherit;
   font-size: 15.5px;
   font-weight: 300;
-  letter-spacing: 0.01em;
+  letter-spacing: .01em;
 }
-.search__input::placeholder {
-  color: var(--muted);
-  font-weight: 300;
-}
-/* 去掉浏览器原生 search 清除按钮，避免与自绘按钮重复 */
-.search__input::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  appearance: none;
-}
+.search__input::placeholder { color: var(--faint); font-weight: 300; }
+.search__input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
 
-/* ============ 清空按钮 ============ */
 .search__clear {
   flex: none;
   width: 30px;
@@ -412,20 +391,12 @@ defineExpose({ focus: () => inputEl.value && inputEl.value.focus() })
   border-radius: 50%;
   cursor: pointer;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.07);
-  transition: color 0.25s, background 0.25s, transform 0.25s var(--ease);
+  background: rgba(249, 116, 159, .1);
+  transition: color .25s, background .25s, transform .25s var(--ease);
 }
-.search__clear:hover {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.14);
-  transform: rotate(90deg);
-}
-.search__clear svg {
-  width: 14px;
-  height: 14px;
-}
+.search__clear:hover { color: #fff; background: var(--sakura-400); transform: rotate(90deg); }
+.search__clear svg { width: 14px; height: 14px; }
 
-/* ============ "/" 快捷键提示 ============ */
 .search__kbd {
   flex: none;
   display: grid;
@@ -436,15 +407,15 @@ defineExpose({ focus: () => inputEl.value && inputEl.value.focus() })
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--stroke);
-  border-radius: 7px;
+  color: var(--faint);
+  background: var(--sakura-50);
+  border: 1px solid var(--sakura-200);
+  border-radius: 8px;
   padding: 3px 9px;
   line-height: 1;
 }
 
-/* ============ 搜索按钮（复用登录页 submit 的渐变语言） ============ */
+/* ============ 搜索按钮 ============ */
 .search__btn {
   flex: none;
   height: 44px;
@@ -455,23 +426,19 @@ defineExpose({ focus: () => inputEl.value && inputEl.value.focus() })
   font: inherit;
   font-size: 14.5px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: .08em;
   color: #fff;
-  background: linear-gradient(115deg, var(--a1), #5b8bff 45%, var(--a2));
+  background: linear-gradient(115deg, var(--sakura-600), var(--sakura-500) 48%, var(--sakura-400));
   background-size: 180% auto;
-  box-shadow: 0 12px 28px -12px rgba(124, 92, 255, 0.85);
-  transition: background-position 0.55s, box-shadow 0.35s, transform 0.3s var(--ease);
+  box-shadow: 0 12px 26px -12px rgba(232, 84, 127, .95);
+  transition: background-position .55s, box-shadow .35s, transform .3s var(--ease);
 }
 .search__btn:hover {
   background-position: right center;
-  box-shadow: 0 16px 34px -12px rgba(34, 211, 238, 0.7);
+  box-shadow: 0 16px 32px -12px rgba(249, 116, 159, 1);
 }
-.search__btn:active {
-  transform: scale(0.97);
-}
-.search__btn-txt {
-  display: block;
-}
+.search__btn:active { transform: scale(.97); }
+.search__btn-txt { display: block; }
 
 /* ============ 建议 / 历史 下拉 ============ */
 .drop {
@@ -480,151 +447,112 @@ defineExpose({ focus: () => inputEl.value && inputEl.value.focus() })
   left: 0;
   right: 0;
   z-index: 40;
-  border-radius: 18px;
+  border-radius: 22px;
   overflow: hidden;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.05)),
-    rgba(10, 12, 26, 0.92);
+  background: rgba(255, 251, 253, .97);
   backdrop-filter: blur(26px) saturate(150%);
   -webkit-backdrop-filter: blur(26px) saturate(150%);
-  border: 1px solid var(--stroke);
-  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 214, 229, .95);
+  box-shadow: 0 34px 70px -34px rgba(147, 81, 108, .6);
 }
-.drop-enter-active,
-.drop-leave-active {
-  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
-}
-.drop-enter-from,
-.drop-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
+.drop-enter-active, .drop-leave-active { transition: opacity .25s var(--ease), transform .25s var(--ease); }
+.drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-8px); }
 
 .drop__row {
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 12px 18px;
+  padding: 11px 18px;
   border: 0;
   background: none;
   cursor: pointer;
   text-align: left;
   font: inherit;
-  transition: background 0.2s;
+  transition: background .2s;
 }
-.drop__row--on,
-.drop__row:hover {
-  background: rgba(124, 92, 255, 0.14);
-}
+.drop__row--on, .drop__row:hover { background: var(--sakura-50); }
 .drop__ico {
   flex: none;
   width: 30px;
   height: 30px;
   display: grid;
   place-items: center;
-  border-radius: 9px;
+  border-radius: 10px;
   color: #fff;
 }
-.drop__ico svg {
-  width: 14px;
-  height: 14px;
-}
+.drop__ico svg { width: 14px; height: 14px; }
 .drop__ico--title {
-  background: linear-gradient(135deg, var(--a1), #5b8bff);
-  box-shadow: 0 6px 14px -6px var(--a1);
+  background: linear-gradient(135deg, var(--sakura-500), var(--sakura-400));
+  box-shadow: 0 6px 14px -8px rgba(232, 84, 127, .9);
 }
 .drop__ico--tag {
-  background: linear-gradient(135deg, #5b8bff, var(--a2));
-  box-shadow: 0 6px 14px -6px var(--a2);
+  background: linear-gradient(135deg, var(--sky-500), var(--sky-400));
+  box-shadow: 0 6px 14px -8px rgba(90, 169, 221, .9);
 }
 .drop__text {
   flex: 1;
   min-width: 0;
   font-size: 14px;
   color: var(--ink);
-  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .drop__text em {
   font-style: normal;
-  color: var(--a2);
+  color: var(--sakura-600);
   font-weight: 600;
+  background: linear-gradient(transparent 62%, var(--sakura-200) 62%);
 }
-.drop__type {
-  flex: none;
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-}
+.drop__type { flex: none; font-size: 11px; color: var(--faint); letter-spacing: .06em; }
 
-/* 历史记录区 */
 .drop__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px 6px;
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .16em;
+  color: var(--faint);
 }
 .drop__clear {
   border: 0;
   background: none;
-  color: var(--muted);
+  color: var(--faint);
   font: inherit;
   font-size: 12px;
   letter-spacing: 0;
-  text-transform: none;
   cursor: pointer;
   padding: 0;
-  transition: color 0.25s;
+  transition: color .25s;
 }
-.drop__clear:hover {
-  color: #ff8098;
-}
-.drop__history {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 6px 18px 12px;
-}
+.drop__clear:hover { color: var(--sakura-600); }
+.drop__history { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 18px 12px; }
 .drop__hchip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--stroke);
-  background: var(--glass);
-  color: var(--ink);
+  border: 1px solid var(--sakura-200);
+  background: #fff;
+  color: var(--ink-soft);
   font: inherit;
   font-size: 12.5px;
   padding: 5px 13px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.25s, border-color 0.25s;
+  transition: background .25s, border-color .25s, color .25s;
 }
-.drop__hchip svg {
-  width: 12px;
-  height: 12px;
-  color: var(--muted);
-  flex: none;
-}
-.drop__hchip:hover {
-  background: var(--glass-2);
-  border-color: rgba(124, 92, 255, 0.45);
-}
+.drop__hchip svg { width: 12px; height: 12px; color: var(--sakura-400); flex: none; }
+.drop__hchip:hover { background: var(--sakura-50); border-color: var(--sakura-400); color: var(--sakura-700); }
 
-/* 底部快捷键提示 */
 .drop__foot {
   display: flex;
   gap: 16px;
   padding: 10px 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid var(--line-soft);
   font-size: 11px;
-  color: var(--muted);
+  color: var(--faint);
   font-weight: 300;
 }
 .drop__foot kbd {
@@ -636,37 +564,21 @@ defineExpose({ focus: () => inputEl.value && inputEl.value.focus() })
   padding: 0 4px;
   margin-right: 3px;
   font-size: 10.5px;
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--stroke);
-  border-radius: 5px;
+  color: var(--ink-soft);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
 }
 
 /* ============ 响应式 ============ */
 @media (max-width: 640px) {
-  .search__inner {
-    height: 52px;
-    padding-left: 16px;
-    gap: 9px;
-  }
-  .search__input {
-    font-size: 14.5px;
-  }
-  .search__btn {
-    height: 40px;
-    padding: 0 18px;
-    font-size: 14px;
-  }
-  .search__kbd {
-    display: none;
-  }
-  .drop__foot {
-    display: none;
-  }
+  .search__inner { height: 52px; padding-left: 16px; gap: 9px; }
+  .search__input { font-size: 14.5px; }
+  .search__btn { height: 40px; padding: 0 18px; font-size: 14px; }
+  .search__kbd { display: none; }
+  .drop__foot { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .search.is-focus .search__glow {
-    animation: none;
-  }
+  .search.is-focus .search__glow { animation: none; }
 }
 </style>

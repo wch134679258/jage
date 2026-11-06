@@ -93,7 +93,7 @@
             </div>
           </header>
 
-          <div class="paper__body">
+          <div class="paper__body" :class="{ 'paper__body--dropcap': canDropCap }">
             <p v-for="(para, i) in paragraphs" :key="i">{{ para }}</p>
           </div>
 
@@ -178,6 +178,16 @@ const paragraphs = computed(() => {
     .split(/\n\s*\n/)
     .map((p) => p.replace(/\n/g, ' ').trim())
     .filter(Boolean)
+})
+
+/**
+ * 首字下沉只在「首字是有意义的中文字/字母」时开启。
+ * 若正文以《「“（ 等标点开头，::first-letter 会把标点放大、与后文拆开（《龙 族》），
+ * 这种情况直接放弃下沉，保持整体观感。
+ */
+const canDropCap = computed(() => {
+  const first = (paragraphs.value[0] || '').trim().charAt(0)
+  return !!first && !/[\s《〈「『“"'（(【\[—-]/.test(first)
 })
 
 const favText = computed(() => {
@@ -275,10 +285,10 @@ watch(() => [props.user && props.user.id, props.articleId], ([uid, id]) => {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 860px;
+  max-width: 880px;
   min-height: 100vh;
   margin: 0 auto;
-  padding: 22px 24px 60px;
+  padding: 22px 24px 70px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -288,117 +298,119 @@ watch(() => [props.user && props.user.id, props.articleId], ([uid, id]) => {
   display: flex;
   flex-direction: column;
   gap: 26px;
-  padding-top: 22px;
-  animation: rise 0.55s var(--ease) both;
+  padding-top: 18px;
+  animation: rise .55s var(--ease) both;
 }
 
 /* ============ 返回 + 收藏 ============ */
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 11px;
-  cursor: pointer;
-  font: inherit;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--muted);
-  background: var(--glass);
-  border: 1px solid var(--stroke);
-  transition: color 0.25s, background 0.25s, transform 0.25s var(--ease);
-}
-.back:hover {
-  color: var(--ink);
-  background: var(--glass-2);
-  transform: translateX(-2px);
-}
-.back svg {
-  width: 15px;
-  height: 15px;
-}
+.back,
 .fav {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   height: 38px;
   padding: 0 16px;
-  border-radius: 11px;
+  border-radius: 999px;
   cursor: pointer;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--muted);
-  background: var(--glass);
-  border: 1px solid var(--stroke);
-  transition: color 0.25s, background 0.25s, border-color 0.25s, transform 0.25s var(--ease);
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, .82);
+  border: 1px solid var(--line-soft);
+  backdrop-filter: blur(10px);
+  transition: color .25s, background .25s, border-color .25s, transform .25s var(--ease), box-shadow .25s;
 }
-.fav svg {
-  width: 15px;
-  height: 15px;
-}
+.back:hover,
 .fav:hover:not(:disabled) {
-  color: #ffd76e;
-  border-color: rgba(255, 215, 110, 0.45);
-  transform: translateY(-1px);
+  color: var(--sakura-600);
+  border-color: var(--sakura-200);
+  background: #fff;
+  box-shadow: 0 12px 22px -18px rgba(197, 58, 100, .8);
 }
+.back:hover { transform: translateX(-2px); }
+.fav:hover:not(:disabled) { transform: translateY(-1px); }
+.back svg,
+.fav svg { width: 15px; height: 15px; }
+
+/* 收藏 / 点赞 靠右 */
+.fav { margin-left: auto; }
+.fav + .fav { margin-left: 0; }
+
 .fav--on {
-  color: #ffd76e;
-  background: rgba(255, 215, 110, 0.12);
-  border-color: rgba(255, 215, 110, 0.5);
+  color: var(--sakura-600);
+  background: var(--sakura-50);
+  border-color: var(--sakura-200);
 }
-.fav--pending {
-  opacity: 0.6;
+.fav--like.fav--on {
+  color: var(--sky-600);
+  background: #f2f9fd;
+  border-color: #cfe8f7;
+}
+.fav--pending { opacity: .6; pointer-events: none; }
+
+/* ============ 文章卡 ============ */
+.paper {
+  position: relative;
+  padding: 52px 58px 46px;
+  border-radius: 22px;
+  background: var(--porcelain);
+  border: 1px solid var(--porcelain-line);
+  box-shadow: var(--gloss), 0 1px 2px rgba(96, 62, 78, .03),
+              0 30px 60px -44px rgba(96, 62, 78, .8);
+  overflow: hidden;
+}
+/* 纸角一片淡樱，弱化的装饰 */
+.paper::before {
+  content: '';
+  position: absolute;
+  top: -70px;
+  right: -70px;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249, 116, 159, .1), transparent 68%);
   pointer-events: none;
 }
-
-/* ============ 文章卡片 ============ */
-.paper {
-  padding: 44px 48px 40px;
-  border-radius: 22px;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.015) 50%, rgba(255, 255, 255, 0.045)),
-    rgba(10, 12, 26, 0.6);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  border: 1px solid var(--stroke);
-  box-shadow: 0 30px 70px -40px rgba(0, 0, 0, 0.9);
-}
 .paper__head {
+  position: relative;
   padding-bottom: 26px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--line-soft);
 }
 .paper__cat {
   display: inline-block;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--a2);
-  background: rgba(34, 211, 238, 0.12);
-  border: 1px solid rgba(34, 211, 238, 0.4);
+  letter-spacing: .1em;
+  color: var(--sakura-700);
+  background: var(--sakura-50);
+  border: 1px solid var(--sakura-200);
   border-radius: 999px;
   padding: 4px 13px;
   margin-bottom: 18px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.25s, color 0.25s;
+  transition: background .25s, color .25s, transform .25s;
 }
 .paper__cat:hover {
   color: #fff;
-  background: rgba(34, 211, 238, 0.28);
+  background: var(--sakura-500);
+  border-color: transparent;
+  transform: translateY(-1px);
 }
 .paper__title {
-  font-size: clamp(24px, 3.4vw, 34px);
-  line-height: 1.28;
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 3.4vw, 33px);
+  line-height: 1.42;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: .01em;
+  color: var(--ink);
 }
 .paper__meta {
   display: flex;
@@ -406,37 +418,49 @@ watch(() => [props.user && props.user.id, props.articleId], ([uid, id]) => {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 16px;
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 300;
+  font-size: 12.5px;
+  color: var(--faint);
 }
-.paper__author {
-  color: var(--ink);
-  font-weight: 500;
-}
+.paper__author { color: var(--sakura-600); font-weight: 500; }
 .paper__dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--muted);
-  opacity: 0.6;
+  background: var(--sakura-300);
   flex: none;
 }
 
-/* 正文 */
+/* 正文：中文正文行高 1.9 左右最舒适，2.05 会显得散 */
 .paper__body {
-  padding-top: 28px;
+  position: relative;
+  padding-top: 30px;
   font-size: 15.5px;
-  line-height: 2;
-  color: rgba(238, 242, 255, 0.86);
-  font-weight: 300;
+  line-height: 1.9;
+  letter-spacing: .012em;
+  color: var(--ink-soft);
 }
 .paper__body p {
-  margin-bottom: 1.4em;
+  margin: 0 0 1.1em;
   text-align: justify;
+  text-justify: inter-ideograph;
+  /* 中文标点挤压，避免行首行尾出现孤立标点 */
+  hanging-punctuation: allow-end;
 }
-.paper__body p:last-child {
-  margin-bottom: 0;
+.paper__body p:last-child { margin-bottom: 0; }
+/**
+ * 首段首字下沉。
+ * 注意：正文常以「《书名》」开头，::first-letter 会把「《」当成首字放大，
+ * 结果书名号与后面的字被拆开。用 ::first-letter 的 line-break 问题无法在 CSS 里规避，
+ * 所以只在正文不以书名号/引号开头时生效（由模板上的 .paper__body--dropcap 控制）。
+ */
+.paper__body--dropcap > p:first-child::first-letter {
+  float: left;
+  font-family: var(--font-serif);
+  font-size: 3.1em;
+  line-height: .92;
+  font-weight: 600;
+  color: var(--sakura-600);
+  padding: 4px 10px 0 0;
 }
 
 /* 文末标签 */
@@ -446,39 +470,55 @@ watch(() => [props.user && props.user.id, props.articleId], ([uid, id]) => {
   gap: 8px;
   margin-top: 34px;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--line-soft);
 }
 .rtag {
-  border: 1px solid var(--stroke);
-  background: transparent;
+  border: 1px solid var(--sakura-100);
+  background: #fff;
   color: var(--muted);
   font: inherit;
   font-size: 12.5px;
   padding: 5px 13px;
   border-radius: 999px;
   cursor: pointer;
-  transition: color 0.25s, background 0.25s, border-color 0.25s, transform 0.25s var(--ease);
+  transition: color .25s, background .25s, border-color .25s, transform .25s var(--ease);
 }
+.rtag::before { content: '#'; margin-right: 2px; color: var(--sakura-300); }
 .rtag:hover {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--sakura-600);
+  background: var(--sakura-50);
+  border-color: var(--sakura-200);
   transform: translateY(-1px);
 }
 
-/* 未登录收藏引导 */
+/* 未登录引导 */
 .login-hint {
+  text-align: center;
   font-size: 13px;
   color: var(--muted);
-  text-align: center;
-  font-weight: 300;
 }
 
 /* ============ 相关文章 ============ */
 .related__title {
+  position: relative;
+  margin: 0 0 16px;
+  padding-left: 14px;
+  font-family: var(--font-serif);
   font-size: 17px;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  margin-bottom: 16px;
+  letter-spacing: .04em;
+  color: var(--ink);
+}
+.related__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--sakura-400), var(--sakura-600));
 }
 .related__grid {
   display: grid;
@@ -486,37 +526,35 @@ watch(() => [props.user && props.user.id, props.articleId], ([uid, id]) => {
   gap: 14px;
 }
 .relcard {
-  padding: 18px 20px 16px;
-  border-radius: 16px;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
-    rgba(10, 12, 26, 0.5);
-  border: 1px solid var(--stroke);
+  padding: 20px 22px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .78);
+  border: 1px solid var(--line-soft);
   cursor: pointer;
-  transition: transform 0.3s var(--ease), border-color 0.3s, background 0.3s;
+  transition: transform .3s var(--ease), border-color .3s, box-shadow .3s, background .3s;
 }
 .relcard:hover {
-  transform: translateY(-3px);
-  border-color: rgba(124, 92, 255, 0.45);
-  background:
-    linear-gradient(160deg, rgba(124, 92, 255, 0.12), rgba(255, 255, 255, 0.02)),
-    rgba(10, 12, 26, 0.55);
+  transform: translateY(-4px);
+  border-color: var(--sakura-200);
+  background: #fff;
+  box-shadow: 0 24px 40px -32px rgba(120, 60, 84, .9);
 }
 .relcard:focus-visible {
-  outline: 2px solid var(--a1);
+  outline: 2px solid var(--sakura-300);
   outline-offset: 2px;
 }
 .relcard__title {
-  font-size: 15px;
+  margin: 0;
+  font-size: 14.5px;
   font-weight: 600;
-  line-height: 1.45;
+  line-height: 1.5;
+  color: var(--ink);
 }
 .relcard__summary {
-  margin-top: 8px;
-  font-size: 13px;
+  margin: 8px 0 0;
+  font-size: 12.8px;
   line-height: 1.7;
   color: var(--muted);
-  font-weight: 300;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -528,8 +566,7 @@ watch(() => [props.user && props.user.id, props.articleId], ([uid, id]) => {
   gap: 8px;
   margin-top: 12px;
   font-size: 11.5px;
-  color: var(--muted);
-  font-weight: 300;
+  color: var(--faint);
 }
 
 /* ============ 骨架 / 状态 ============ */
@@ -537,24 +574,25 @@ watch(() => [props.user && props.user.id, props.articleId], ([uid, id]) => {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 44px 48px;
-  border-radius: 22px;
-  background: rgba(10, 12, 26, 0.5);
-  border: 1px solid var(--stroke);
+  padding: 46px 52px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, .8);
+  border: 1px solid var(--line-soft);
 }
 .sk-line {
   height: 14px;
   border-radius: 7px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+  background: linear-gradient(100deg, var(--sakura-50) 20%, var(--sakura-100) 40%, var(--sakura-50) 60%);
+  background-size: 220% 100%;
+  animation: shimmer 1.5s linear infinite;
 }
 .sk-line--cat { width: 64px; height: 22px; border-radius: 999px; }
 .sk-line--title { width: 72%; height: 26px; }
 .sk-line--meta { width: 40%; height: 12px; }
 .sk-line--short { width: 55%; }
 @keyframes shimmer {
-  to { background-position: -200% 0; }
+  from { background-position: 120% 0; }
+  to   { background-position: -120% 0; }
 }
 .state {
   display: flex;
@@ -562,57 +600,38 @@ watch(() => [props.user && props.user.id, props.articleId], ([uid, id]) => {
   align-items: center;
   gap: 12px;
   padding: 70px 24px;
-  border-radius: 22px;
-  background: rgba(10, 12, 26, 0.5);
-  border: 1px dashed var(--stroke);
+  border-radius: 24px;
+  border: 1px dashed var(--sakura-200);
+  background: rgba(255, 255, 255, .6);
   color: var(--muted);
   font-size: 14px;
-  font-weight: 300;
   text-align: center;
 }
-.state svg {
-  width: 40px;
-  height: 40px;
-  opacity: 0.7;
-}
-.state--error svg {
-  color: #ff8098;
-}
+.state svg { width: 38px; height: 38px; color: var(--sakura-300); }
+.state--error svg { color: var(--sakura-400); }
 .state__btn {
-  border: 1px solid var(--stroke);
-  background: var(--glass);
-  color: var(--ink);
+  border: 0;
+  background: linear-gradient(120deg, var(--sakura-500), var(--sakura-600));
+  color: #fff;
   font: inherit;
   font-size: 13px;
-  padding: 8px 20px;
-  border-radius: 10px;
+  font-weight: 600;
+  padding: 9px 22px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.25s, transform 0.25s var(--ease);
+  box-shadow: 0 14px 26px -18px rgba(232, 84, 127, .9);
+  transition: transform .25s;
 }
-.state__btn:hover {
-  background: var(--glass-2);
-  transform: translateY(-1px);
-}
+.state__btn:hover { transform: translateY(-2px); }
 
 /* ============ 响应式 ============ */
 @media (max-width: 640px) {
-  .detail {
-    padding: 14px 14px 40px;
-    gap: 14px;
-  }
-  .paper {
-    padding: 28px 22px 26px;
-    border-radius: 18px;
-  }
-  .paper__body {
-    font-size: 14.5px;
-    line-height: 1.9;
-  }
-  .related__grid {
-    grid-template-columns: 1fr;
-  }
-  .skeleton {
-    padding: 28px 22px;
-  }
+  .detail { padding: 14px 14px 46px; gap: 14px; }
+  .paper { padding: 28px 22px 26px; border-radius: 20px; }
+  .paper__body { font-size: 14.8px; line-height: 1.95; }
+  .related__grid { grid-template-columns: 1fr; }
+  .skeleton { padding: 28px 22px; }
+  .fav span { display: none; }
+  .fav { padding: 0 13px; }
 }
 </style>

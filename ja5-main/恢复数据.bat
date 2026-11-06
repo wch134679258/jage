@@ -26,11 +26,11 @@ if not defined MYSQL (
 
 set "FAILED=0"
 
-echo [1/4] 建库建表 + 内容迁移...
-for %%f in (
+echo [1/4] 建库建表 + 内容迁移...for %%f in (
   init-db.sql
   migrate-category.sql
   migrate-novel.sql
+  migrate-novel-more.sql
   migrate-favorite.sql
   migrate-game-score.sql
   migrate-history-like.sql
@@ -68,6 +68,6 @@ if "!FAILED!"=="1" (
   pause
   exit /b 1
 )
-echo 恢复完成。基准值：文章 13 / 分类 6 / 标签 28 / 用户 1 / 管理员 1
+echo 恢复完成。基准值：文章 19 / 分类 6 / 标签 37 / 用户 1 / 管理员 1
 pause
 exit /b 0

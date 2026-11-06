@@ -103,6 +103,7 @@ env -u SERVER_PORT -u SERVER__PORT -u SERVER_ADDRESS -u SERVER__ADDRESS -u SERVE
 
 ```
 springBootTest/migrate-novel.sql     新增「小说」分类 + 7 个标签 + 《凡人修仙传》5 篇文章（含正文）
+springBootTest/migrate-novel-more.sql 小说第二辑：《龙族》《蛊真人》《诡秘之主》作品级标签 + 6 篇文章（含正文）
 springBootTest/migrate-favorite.sql  新增 favorite 收藏表（user_id + article_id 联合唯一）
 ```
 
@@ -328,14 +329,14 @@ src/components/HomePage.vue      升级：卡片进详情、卡片收藏、数�
 
 ### 12.2 一键恢复（推荐）
 
-双击 **`ja5-main\恢复数据.bat`**（GBK + CRLF），按序跑 7 个幂等脚本并重建测试账号：
+双击 **`ja5-main\恢复数据.bat`**（GBK + CRLF），按序跑 8 个幂等脚本并重建测试账号：
 
 ```
-init-db.sql → migrate-category.sql → migrate-novel.sql → migrate-favorite.sql
-→ migrate-game-score.sql → migrate-history-like.sql → migrate-article-content.sql
+init-db.sql → migrate-category.sql → migrate-novel.sql → migrate-novel-more.sql
+→ migrate-favorite.sql → migrate-game-score.sql → migrate-history-like.sql → migrate-article-content.sql
 ```
 
-恢复后基准值：**文章 13 / 分类 6 / 标签 28 / 用户 1**（`verify用户` / `abc12345`，id=2）。
+恢复后基准值：**文章 19 / 分类 6 / 标签 37 / 用户 1**（`verify用户` / `abc12345`，id=2）。
 
 ### 12.3 手动恢复命令
 

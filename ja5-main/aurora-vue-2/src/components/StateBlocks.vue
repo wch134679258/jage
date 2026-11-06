@@ -65,53 +65,53 @@ defineEmits(['action'])
 </script>
 
 <style scoped>
-/* ---------- 骨架屏 ---------- */
+/* ---------- 骨架屏：樱花纸感的浅粉流光 ---------- */
 .sk {
   padding: 18px;
   border-radius: 18px;
-  border: 1px solid var(--stroke, rgba(255, 255, 255, .11));
-  background: var(--glass, rgba(255, 255, 255, .055));
+  border: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, .7);
   display: grid;
   gap: 10px;
 }
 
 .sk--paper { gap: 14px; padding: 22px; }
 
+.sk__line,
+.sk__chip {
+  background: linear-gradient(
+    100deg,
+    var(--sakura-50) 20%,
+    var(--sakura-100) 38%,
+    var(--sakura-50) 58%
+  );
+  background-size: 220% 100%;
+  animation: skShine 1.5s linear infinite;
+}
+
 .sk__line {
   height: 12px;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, .07) 25%,
-    rgba(255, 255, 255, .16) 37%,
-    rgba(255, 255, 255, .07) 63%
-  );
-  background-size: 400% 100%;
-  animation: skShine 1.4s ease infinite;
 }
 
 .sk__line--title { height: 18px; width: 62%; }
 .sk__line--short { width: 42%; }
 
 .sk__foot { display: flex; gap: 8px; margin-top: 4px; }
-.sk__chip {
-  height: 20px; width: 64px; border-radius: 999px;
-  background: rgba(255, 255, 255, .08);
-  animation: skShine 1.4s ease infinite;
-}
+.sk__chip { height: 20px; width: 64px; border-radius: 999px; }
 .sk__chip--sm { width: 40px; }
 
 @keyframes skShine {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+  from { background-position: 120% 0; }
+  to   { background-position: -120% 0; }
 }
 
 /* ---------- 空 / 错误状态 ---------- */
 .state {
-  padding: 40px 24px;
+  padding: 44px 24px;
   border-radius: 20px;
-  border: 1px dashed var(--stroke, rgba(255, 255, 255, .14));
-  background: var(--glass, rgba(255, 255, 255, .04));
+  border: 1px dashed var(--sakura-200);
+  background: rgba(255, 255, 255, .55);
   text-align: center;
   display: grid;
   justify-items: center;
@@ -124,33 +124,53 @@ defineEmits(['action'])
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 20px;
-  color: var(--ink, #eef2ff);
-  background: rgba(124, 92, 255, .18);
-  border: 1px solid rgba(124, 92, 255, .35);
+  font-size: 19px;
+  color: var(--sakura-500);
+  background: var(--sakura-50);
+  border: 1px solid var(--sakura-100);
 }
 
 .state--error .state__icon {
-  background: rgba(255, 107, 139, .16);
-  border-color: rgba(255, 107, 139, .4);
+  color: var(--sakura-700);
+  background: var(--sakura-100);
+  border-color: var(--sakura-200);
   font-weight: 700;
 }
 
-.state__title { font-size: 16px; font-weight: 600; }
-.state__desc { font-size: 13px; color: var(--muted, #8d97bd); max-width: 42ch; line-height: 1.6; }
+.state__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: var(--ink);
+}
+.state__desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 42ch;
+  line-height: 1.7;
+}
 
 .state__btn {
-  margin-top: 4px;
-  padding: 8px 18px;
+  margin-top: 6px;
+  padding: 9px 20px;
   border-radius: 999px;
-  border: 1px solid rgba(124, 92, 255, .5);
-  background: rgba(124, 92, 255, .18);
-  color: var(--ink, #eef2ff);
+  border: 0;
+  background: linear-gradient(120deg, var(--sakura-500), var(--sakura-600));
+  color: #fff;
+  font: inherit;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform .2s var(--ease, ease), background .2s var(--ease, ease);
+  box-shadow: 0 14px 26px -18px rgba(232, 84, 127, .9);
+  transition: transform .2s var(--ease, ease), box-shadow .2s;
 }
-.state__btn:hover { background: rgba(124, 92, 255, .32); transform: translateY(-1px); }
+.state__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 32px -20px rgba(232, 84, 127, 1);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .sk__line, .sk__chip { animation: none; }

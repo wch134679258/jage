@@ -1,13 +1,19 @@
 <template>
-  <AuroraBackground />
+  <SakuraBackground :night="night" />
   <div class="grain"></div>
-  <div class="vignette"></div>
+  <PetalField :density="night ? 1 : 0.85" :opacity="night ? 1 : 0.88" />
 
-  <!-- 全局轻提示：任何组件调用 toast.xxx() 都会在这里显示 -->
+  <!-- 全局轻提示 -->
   <ToastHost />
 
   <!-- 登录 / 注册页 -->
   <main v-if="view === 'auth'" class="stage">
+    <header class="stage__brand">
+      <span class="stage__mark"></span>
+      <span class="stage__name">樱见</span>
+      <span class="stage__en">SAKURA NOTE</span>
+    </header>
+
     <section class="card" ref="card" @pointermove="onMove" @pointerleave="onLeave">
       <div class="card__spin"></div>
       <div class="card__fill"></div>
@@ -20,9 +26,13 @@
 
       <SuccessOverlay :show="showDone" :title="doneTitle" :sub="doneSub" @reset="onReset" />
     </section>
+
+    <p class="stage__foot">
+      春风穿过鸟居，樱瓣落在书页上 —— 欢迎回到这里。
+    </p>
   </main>
 
-  <!-- ============ 登录后的页面（视图状态机） ============ -->
+  <!-- ============ 登录后的页面 ============ -->
   <HomePage
     v-else-if="view === 'home'"
     :user="user"
@@ -102,7 +112,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import AuroraBackground from './components/AuroraBackground.vue'
+import SakuraBackground from './components/SakuraBackground.vue'
+import PetalField from './components/PetalField.vue'
 import ToastHost from './components/ToastHost.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import ProfilePage from './components/ProfilePage.vue'
@@ -126,40 +137,32 @@ const doneTitle = ref('')
 const doneSub = ref('')
 
 /**
- * 视图状态机（未引入 vue-router，单页应用用状态切换足够）：
- *   auth       登录 / 注册
- *   home       首页（搜索 + 分类）
- *   article    文章详情
- *   favorites  我的收藏
- *   discover   发现
- *   profile    个人中心（资料 / 统计 / 浏览历史 / 游戏成绩）
- *   about      关于
- *   game       星空贪吃蛇小游戏
+ * 视图状态机（无 vue-router）：
+ *   auth 登录 / home 首页 / article 详情 / favorites 收藏
+ *   discover 发现 / profile 我的 / about 关于 / game 小游戏
  */
 const view = ref('auth')
 const user = ref(null)
 const articleId = ref(null)
 
-/** 登录页与全屏游戏页不显示页脚 */
+/** 登录页用夜色，保证表单可读性 */
+const night = computed(() => view.value === 'auth')
+
 const showFooter = computed(() => view.value !== 'auth' && view.value !== 'game')
 
-/** 从其它页面跳回首页时携带的筛选条件（每次传新对象以触发 HomePage 更新） */
 const homeFilter = ref(null)
 
-// 除登录页外都需要文档级纵向滚动，切换 view 时同步 body 的滚动模式
 watch(view, (v) => {
   document.body.classList.toggle('view-home', v !== 'auth')
   window.scrollTo({ top: 0 })
 })
 
 /* ---------- 登录流程 ---------- */
-
 async function onSuccess (mode) {
-  doneTitle.value = mode === 'signup' ? '账号创建成功' : '欢迎回来，探险家'
-  doneSub.value = '正在为你打开星海首页…'
+  doneTitle.value = mode === 'signup' ? '账号创建成功' : '欢迎回来'
+  doneSub.value = '樱花已为你铺好小路，正在打开首页…'
   showDone.value = true
 
-  // 注册 / 登录成功后：用 JWT 拉取受保护信息并进入首页
   if (mode === 'signup' || mode === 'login') {
     try {
       user.value = await getMe()
@@ -182,7 +185,6 @@ function doLogout () {
   goAuth()
 }
 
-/** 回到登录页（收藏等需要登录的操作会引导到这里） */
 function goAuth () {
   view.value = 'auth'
   showDone.value = false
@@ -190,7 +192,6 @@ function goAuth () {
 }
 
 /* ---------- 页面导航 ---------- */
-
 function onNavigate (key) {
   view.value = key
 }
@@ -200,7 +201,6 @@ function openArticle (id) {
   view.value = 'article'
 }
 
-/** 回首页，可携带筛选条件（分类 / 标签 / 排序） */
 function goHome (filter = null) {
   homeFilter.value = filter ? { ...filter, _t: Date.now() } : null
   view.value = 'home'
@@ -214,14 +214,12 @@ function onOpenTag (name) {
   goHome({ tagName: name })
 }
 
-// 刷新页面保持登录态：本地有 token 就直接进首页，token 失效则回登录页
 onMounted(async () => {
   if (!getToken()) return
   try {
     user.value = await getMe()
     view.value = 'home'
   } catch (e) {
-    // token 过期 / 后端未启动：静默回到登录页
     user.value = null
     view.value = 'auth'
   }
@@ -229,20 +227,50 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 注意：这里曾经写过
-     :global(body.view-home) .grain, :global(body.view-home) .vignette { position: fixed }
-   以为只作用于 .grain/.vignette，但 Vue 的 scoped 编译会丢掉后面的后代选择器，
-   实际产出是「body.view-home, body.view-home { position: fixed }」——
-   等于给 body 加了固定定位，body 脱离文档流后 html 只高一屏，
-   全站所有非登录页都滚不动（scrollTop 赋值无效、滚轮无反应）。
-   .grain / .vignette 的固定定位在 style.css 里已经写了，这里无需重复。 */
-
-/* 页脚容器：与各页面内容同宽，居中排布 */
 .footwrap {
   position: relative;
   z-index: 2;
-  width: min(1180px, 100%);
+  width: min(1240px, 100%);
   margin: 0 auto;
   padding: 0 24px 34px;
+}
+
+/* ---------- 登录页顶部品牌（悬浮在卡外） ---------- */
+.stage { min-height: 100dvh; align-content: center; gap: 18px; }
+.stage__brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--night-ink);
+}
+.stage__mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 0 50% 50%;
+  background: linear-gradient(140deg, #fff, var(--sakura-300));
+  transform: rotate(45deg) translateY(2px);
+  box-shadow: 0 0 22px rgba(249, 116, 159, .9);
+}
+.stage__name {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: .34em;
+}
+.stage__en {
+  font-size: 10px;
+  letter-spacing: .32em;
+  color: rgba(255, 236, 245, .55);
+}
+.stage__foot {
+  font-size: 12.5px;
+  letter-spacing: .12em;
+  color: rgba(255, 238, 246, .62);
+  text-shadow: 0 2px 12px rgba(60, 20, 40, .5);
+}
+
+@media (max-width: 900px) {
+  .stage { gap: 12px; }
+  .stage__foot { display: none; }
 }
 </style>

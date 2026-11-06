@@ -2,23 +2,18 @@
   <div class="page">
     <SiteNav :user="user" active="favorites" @go="$emit('navigate', $event)" @logout="$emit('logout')" />
 
-    <main class="main">
-      <header class="head">
-        <span class="head__badge">FAVORITES</span>
-        <h1 class="head__title">我的收藏</h1>
-        <p class="head__sub" v-if="user">收藏的文章会按时间倒序排列，点击卡片可继续阅读</p>
+    <main class="subpage main">
+      <header class="subhead">
+        <span class="subhead__tag">Favorites</span>
+        <h1>我的书签</h1>
+        <p v-if="user">夹在书页里的樱瓣，按收藏时间倒序排列，点开就能接着读。</p>
       </header>
 
       <!-- 未登录：引导去登录 -->
-      <div v-if="!user" class="state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L3.5 9.7l5.9-.8z" />
-        </svg>
-        <p>登录后即可查看和管理你的收藏</p>
-        <button class="state__btn state__btn--primary" type="button" @click="$emit('need-login')">
-          去登录
-        </button>
+      <div v-if="!user" class="sub-empty">
+        <div class="sub-empty__ico">✿</div>
+        <p>登录后就能把喜欢的文章，一片片夹进书里</p>
+        <button class="sub-empty__btn" type="button" @click="$emit('need-login')">去登录</button>
       </div>
 
       <!-- 加载中 -->
@@ -31,34 +26,24 @@
       </div>
 
       <!-- 加载失败 -->
-      <div v-else-if="error" class="state state--error">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-             stroke-linecap="round">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 8v4.5M12 16h.01" />
-        </svg>
+      <div v-else-if="error" class="sub-empty state--error">
+        <div class="sub-empty__ico">!</div>
         <p>{{ error }}</p>
-        <button class="state__btn" type="button" @click="load(1)">重试</button>
+        <button class="sub-empty__btn" type="button" @click="load(1)">重试</button>
       </div>
 
       <!-- 空收藏 -->
-      <div v-else-if="!list.length" class="state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L3.5 9.7l5.9-.8z" />
-        </svg>
-        <p>还没有收藏任何文章，去首页看看感兴趣的内容吧</p>
-        <button class="state__btn state__btn--primary" type="button" @click="$emit('navigate', 'home')">
-          回首页
-        </button>
+      <div v-else-if="!list.length" class="sub-empty">
+        <div class="sub-empty__ico">✿</div>
+        <p>书签还是空的 —— 去花径上找几篇喜欢的吧</p>
+        <button class="sub-empty__btn" type="button" @click="$emit('navigate', 'home')">回首页</button>
       </div>
 
       <!-- 收藏列表 -->
       <template v-else>
         <div class="results__head">
-          <div class="results__headline">
-            <span class="results__count">共 {{ total }} 篇收藏</span>
-          </div>
+          <span class="results__count">共 <b>{{ total }}</b> 篇收藏</span>
+          <span class="results__hint">点击卡片继续阅读</span>
         </div>
 
         <div class="rlist">
@@ -158,74 +143,41 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ============ 页面骨架（与首页一致） ============ */
 .page {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1180px;
   min-height: 100vh;
-  margin: 0 auto;
-  padding: 22px 24px 60px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
 }
 .main {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 26px;
-  padding-top: 22px;
 }
 
-/* 页头 */
-.head {
-  text-align: center;
-  max-width: 720px;
-  width: 100%;
-  margin: 0 auto;
-  animation: rise 0.55s var(--ease) both;
-}
-.head__badge {
-  display: inline-block;
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: var(--a3);
-  border: 1px solid rgba(255, 95, 162, 0.45);
-  border-radius: 999px;
-  padding: 3px 13px;
-  margin-bottom: 16px;
-}
-.head__title {
-  font-size: clamp(28px, 3.6vw, 40px);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-.head__sub {
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 300;
-  margin-top: 12px;
-}
-
-/* 结果头部 */
+/* 结果头 */
 .results__head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-}
-.results__headline {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  min-width: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
 }
 .results__count {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--muted);
-  font-weight: 300;
+}
+.results__count b {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--sakura-600);
+  margin: 0 2px;
+}
+.results__hint {
+  font-size: 11px;
+  letter-spacing: .14em;
+  color: var(--faint);
 }
 
 /* 列表 */
@@ -244,31 +196,32 @@ onMounted(() => {
   padding: 10px 0 4px;
 }
 .pager__btn {
-  border: 1px solid var(--stroke);
-  background: var(--glass);
-  color: var(--ink);
+  border: 1px solid var(--sakura-200);
+  background: #fff;
+  color: var(--sakura-600);
   font: inherit;
   font-size: 13px;
   padding: 8px 18px;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.25s, transform 0.25s var(--ease), opacity 0.25s;
+  transition: background .25s, transform .25s var(--ease), opacity .25s, box-shadow .25s;
 }
 .pager__btn:hover:not(:disabled) {
-  background: var(--glass-2);
+  background: var(--sakura-50);
   transform: translateY(-1px);
+  box-shadow: 0 12px 22px -20px rgba(197, 58, 100, .9);
 }
 .pager__btn:disabled {
-  opacity: 0.4;
+  opacity: .4;
   cursor: not-allowed;
 }
 .pager__info {
   font-size: 12.5px;
   color: var(--muted);
-  font-weight: 300;
+  font-variant-numeric: tabular-nums;
 }
 
-/* ============ 骨架 / 状态 ============ */
+/* 骨架 */
 .skeleton {
   display: flex;
   flex-direction: column;
@@ -277,8 +230,8 @@ onMounted(() => {
 .sk-card {
   padding: 22px 24px 18px;
   border-radius: 18px;
-  background: rgba(10, 12, 26, 0.5);
-  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, .7);
+  border: 1px solid var(--line-soft);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -286,68 +239,21 @@ onMounted(() => {
 .sk-line {
   height: 13px;
   border-radius: 7px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+  background: linear-gradient(100deg, var(--sakura-50) 20%, var(--sakura-100) 40%, var(--sakura-50) 60%);
+  background-size: 220% 100%;
+  animation: shimmer 1.5s linear infinite;
 }
 .sk-line--title { width: 62%; height: 17px; }
 .sk-line--sub { width: 88%; }
 .sk-line--short { width: 45%; }
 @keyframes shimmer {
-  to { background-position: -200% 0; }
-}
-.state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 80px 24px;
-  border-radius: 22px;
-  background: rgba(10, 12, 26, 0.5);
-  border: 1px dashed var(--stroke);
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 300;
-  text-align: center;
-}
-.state svg {
-  width: 42px;
-  height: 42px;
-  opacity: 0.6;
-}
-.state--error svg {
-  color: #ff8098;
-  opacity: 0.9;
-}
-.state__btn {
-  border: 1px solid var(--stroke);
-  background: var(--glass);
-  color: var(--ink);
-  font: inherit;
-  font-size: 13px;
-  padding: 9px 22px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.25s, transform 0.25s var(--ease);
-}
-.state__btn:hover {
-  background: var(--glass-2);
-  transform: translateY(-1px);
-}
-.state__btn--primary {
-  border-color: transparent;
-  color: #fff;
-  background: linear-gradient(115deg, var(--a1), #5b8bff 45%, var(--a2));
-  box-shadow: 0 12px 28px -12px rgba(124, 92, 255, 0.85);
-}
-.state__btn--primary:hover {
-  background-position: right center;
+  from { background-position: 120% 0; }
+  to   { background-position: -120% 0; }
 }
 
-@media (max-width: 640px) {
-  .page {
-    padding: 14px 14px 40px;
-    gap: 14px;
-  }
+.state--error .sub-empty__ico {
+  background: var(--sakura-100);
+  color: var(--sakura-600);
+  font-weight: 700;
 }
 </style>
