@@ -46,3 +46,5 @@ Thumbs.db
 ja5-main/_verify/
 ja5-main/_archive/
 ja5-main/.e2e-shots/
+_shots/
+dist-build/
